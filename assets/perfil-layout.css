@@ -1,0 +1,125 @@
+/* ── LAYOUT ── */
+.perfil-wrapper {
+  display: flex;
+  min-height: calc(100vh - 70px);
+}
+
+/* ── SIDEBAR ── */
+.perfil-sidebar {
+  width: 240px;
+  min-width: 240px;
+  background: #fff;
+  border-right: 1px solid #e5ecf4;
+  padding: 2rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.sidebar-avatar {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid var(--color-principal);
+  margin: 0 auto 0.5rem;
+  display: block;
+}
+
+.sidebar-nombre {
+  text-align: center;
+  font-weight: 600;
+  color: var(--color-texto);
+  font-size: 0.95rem;
+  margin-bottom: 1.2rem;
+}
+
+.sidebar-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  background: none;
+  border: none;
+  border-radius: 10px;
+  padding: 0.65rem 1rem;
+  font-family: 'Poppins', sans-serif;
+  font-size: 0.9rem;
+  color: var(--color-texto);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+  width: 100%;
+  text-decoration: none;
+}
+
+.sidebar-btn:hover {
+  background-color: #eef5fc;
+  color: var(--color-principal-oscuro);
+}
+
+.sidebar-btn.activo {
+  background-color: var(--color-principal);
+  color: #fff;
+  font-weight: 600;
+}
+
+.sidebar-btn i { font-size: 1.1rem; }
+
+.sidebar-divider {
+  border-top: 1px solid #e5ecf4;
+  margin: 0.5rem 0;
+}
+
+.btn-cerrar-sesion { margin-top: auto; color: #e74c3c !important; }
+.btn-cerrar-sesion:hover { background-color: #fdecea !important; color: #c0392b !important; }
+
+/* ── PANEL PRINCIPAL ── */
+.perfil-contenido {
+  flex: 1;
+  padding: 2.5rem;
+  background-color: var(--color-fondo);
+  overflow-y: auto;
+}
+
+.panel-titulo {
+  font-weight: 600;
+  color: var(--color-principal-oscuro);
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid var(--color-principal);
+}
+
+/* ── TARJETAS PUBLICACIÓN ── */
+.pub-card img { object-fit: cover; height: 160px; width: 100%; border-radius: 10px 10px 0 0; }
+.pub-card .card { border: none; border-radius: 12px; box-shadow: 0 3px 10px rgba(0,0,0,0.08); transition: transform 0.2s ease; }
+.pub-card .card:hover { transform: translateY(-4px); }
+
+/* ── BADGE ESTADO ── */
+.badge-estado { font-size: 0.7rem; padding: 4px 10px; border-radius: 20px; }
+
+/* ── MENSAJE VACÍO ── */
+.vacio-msg { text-align: center; color: #aab4be; margin-top: 3rem; }
+.vacio-msg i { font-size: 3rem; display: block; margin-bottom: 0.5rem; }
+
+/* ── MODAL ── */
+.form-edit-label { font-weight: 500; font-size: 0.88rem; }
+select:disabled { background-color: #e9ecef; cursor: not-allowed; }
+
+/* ── MENSAJES ── */
+.conv-item { background:#fff; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.07); padding:1rem 1.2rem; display:flex; align-items:center; gap:1rem; margin-bottom:0.8rem; cursor:pointer; transition:box-shadow 0.2s ease; }
+.conv-item:hover { box-shadow: 0 4px 14px rgba(0,0,0,0.12); }
+.conv-avatar { width:48px; height:48px; border-radius:50%; background:var(--color-principal); display:flex; align-items:center; justify-content:center; color:#fff; font-size:1.3rem; flex-shrink:0; }
+.conv-info { flex:1; }
+.conv-nombre { font-weight:600; font-size:0.95rem; }
+.conv-preview { font-size:0.82rem; color:#888; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:340px; }
+.conv-fecha { font-size:0.75rem; color:#aaa; white-space:nowrap; }
+.conv-badge { background:var(--color-principal-oscuro); color:#fff; border-radius:50%; width:20px; height:20px; font-size:0.7rem; display:flex; align-items:center; justify-content:center; }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 768px) {
+  .perfil-wrapper { flex-direction: column; }
+  .perfil-sidebar { width:100%; min-width:unset; flex-direction:row; flex-wrap:wrap; padding:1rem; border-right:none; border-bottom:1px solid #e5ecf4; gap:0.3rem; }
+  .sidebar-avatar, .sidebar-nombre { display: none; }
+  .sidebar-btn { font-size:0.78rem; padding:0.4rem 0.6rem; }
+  .perfil-contenido { padding: 1.5rem 1rem; }
+}

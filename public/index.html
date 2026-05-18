@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Adopta 🐾 | Encuentra tu compañero ideal</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet" />
+  <link rel="stylesheet" href="/adopciones/assets/estilos.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet" />
+</head>
+
+<body>
+  <nav class="navbar-adopciones">
+    <a class="navbar-brand" href="#">
+      <img src="/adopciones/assets/logo.png" alt="Logo" />
+      <span>Adopta</span>
+    </a>
+    <div class="nav-icons">
+      <div class="nav-icon-wrapper"
+           onclick="window.location.href='favoritos.html'" title="Favoritos">
+        <i class="bi bi-heart-fill nav-item-icon"></i>
+      </div>
+      <div class="nav-icon-wrapper"
+           onclick="window.location.href='mensajes.html'" title="Buzón">
+        <i class="bi bi-envelope-fill nav-item-icon"></i>
+        <span class="badge-mensajes d-none" id="badgeMensajes"></span>
+      </div>
+      <span id="nombreUsuario" class="navbar-usuario"
+            onclick="window.location.href='perfil.html'" title="Ver mi perfil">Usuario</span>
+      <button class="btn btn-publicar"
+              onclick="window.open('publicar.html','_blank')">+ Publicar</button>
+    </div>
+  </nav>
+
+  <main class="container my-5">
+
+    <!-- BUSCADOR -->
+    <section class="buscador-section text-center mb-5">
+      <h3 class="titulo-principal mb-4">Encuentra tu compañero ideal 🐶💙</h3>
+
+      <div class="row justify-content-center g-3 mb-3">
+        <div class="col-sm-12 col-md-7">
+          <div class="input-group">
+            <input type="text" id="inputBusqueda" class="form-control"
+                   placeholder="Buscar por nombre, raza, descripción...">
+            <button class="btn btn-principal" id="btnBuscar">
+              <i class="bi bi-search"></i> Buscar
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="row justify-content-center g-2 filtros-container mb-2">
+        <div class="col-10 col-md-2">
+          <select class="form-select" id="filtroEspecie" autocomplete="off">
+            <option value="">Especie</option>
+            <option>Perro</option><option>Gato</option>
+            <option>Ave</option><option>Reptil</option>
+          </select>
+        </div>
+        <div class="col-10 col-md-2">
+          <select class="form-select" id="filtroSexo" autocomplete="off">
+            <option value="">Sexo</option>
+            <option>Macho</option><option>Hembra</option>
+          </select>
+        </div>
+        <div class="col-10 col-md-2">
+          <select class="form-select" id="filtroEstado" autocomplete="off">
+            <option value="">Estado</option>
+            <option>En adopción</option>
+            <option>Perdido</option>
+            <option>Abandonado</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="row justify-content-center g-2 filtros-container mb-3">
+        <div class="col-10 col-md-3">
+          <select class="form-select" id="filtroComunidad" autocomplete="off">
+            <option value="">Comunidad Autónoma</option>
+            <option>Andalucía</option><option>Aragón</option><option>Asturias</option>
+            <option>Baleares</option><option>Canarias</option><option>Cantabria</option>
+            <option>Castilla-La Mancha</option><option>Castilla y León</option>
+            <option>Cataluña</option><option>Ceuta</option>
+            <option>Comunidad de Madrid</option><option>Comunidad Foral de Navarra</option>
+            <option>Comunidad Valenciana</option><option>Extremadura</option>
+            <option>Galicia</option><option>La Rioja</option>
+            <option>Melilla</option><option>País Vasco</option>
+            <option>Región de Murcia</option>
+          </select>
+        </div>
+        <div class="col-10 col-md-3">
+          <select class="form-select" id="filtroProvincia" disabled autocomplete="off">
+            <option value="">Provincia</option>
+          </select>
+        </div>
+        <div class="col-10 col-md-3">
+          <select class="form-select" id="filtroMunicipio" disabled autocomplete="off">
+            <option value="">Municipio</option>
+          </select>
+        </div>
+        <div class="col-10 col-md-1 d-grid">
+          <button class="btn btn-outline-primary" id="btnFiltrar">Filtrar</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- CARRUSEL ÚLTIMOS PERDIDOS -->
+    <section class="carrusel-section">
+      <h4 class="carrusel-titulo">
+        <i class="bi bi-exclamation-triangle-fill me-2"></i>Últimos perdidos
+      </h4>
+      <div class="carrusel-outer">
+        <div class="carrusel-track" id="carruselTrack"></div>
+      </div>
+      <div class="carrusel-dots" id="carruselDots"></div>
+    </section>
+
+    <!-- PUBLICACIONES -->
+    <section class="publicaciones-section mt-4">
+      <h4 class="titulo-principal mb-4 text-center">🐾 Recomendaciones de adopción</h4>
+      <div class="row g-4" id="contenedorPublicaciones">
+        <p class="text-center text-muted">Cargando publicaciones...</p>
+      </div>
+    </section>
+
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // ============================================================
+    // DATOS MAPA
+    // ============================================================
+    const datosMapa = {
+      "Andalucía": {
+        "Almería":  ["Almería","Adra","Berja","El Ejido","Huércal-Overa","Níjar","Roquetas de Mar","Vera"],
+        "Cádiz":    ["Cádiz","Algeciras","Chiclana de la Frontera","El Puerto de Santa María","Jerez de la Frontera","La Línea de la Concepción","Rota","San Fernando","Sanlúcar de Barrameda"],
+        "Córdoba":  ["Córdoba","Baena","Cabra","Lucena","Montilla","Palma del Río","Peñarroya-Pueblonuevo","Pozoblanco","Puente Genil"],
+        "Granada":  ["Granada","Almuñécar","Baza","Guadix","Loja","Maracena","Motril","Santa Fe"],
+        "Huelva":   ["Huelva","Almonte","Ayamonte","Isla Cristina","Lepe","Moguer","Nerva","Punta Umbría"],
+        "Jaén":     ["Jaén","Alcalá la Real","Andújar","Baeza","Linares","Martos","Úbeda","Villacarrillo"],
+        "Málaga":   ["Málaga","Antequera","Benalmádena","Estepona","Fuengirola","Marbella","Mijas","Nerja","Ronda","Torremolinos","Vélez-Málaga"],
+        "Sevilla":  ["Sevilla","Alcalá de Guadaíra","Carmona","Dos Hermanas","Écija","Lebrija","Morón de la Frontera","Osuna","Utrera","Umbrete","Camas","Tomares","Bormujos","Mairena del Aljarafe"]
+      },
+      "Aragón":     { "Huesca":["Huesca","Barbastro","Jaca","Monzón","Sabiñánigo","Fraga"],"Teruel":["Teruel","Alcañiz","Andorra","Utrillas","Calamocha"],"Zaragoza":["Zaragoza","Calatayud","Ejea de los Caballeros","Tarazona","Utebo","Cuarte de Huerva"] },
+      "Asturias":   { "Asturias":["Oviedo","Gijón","Avilés","Mieres","Langreo","Siero","Castrillón","Corvera de Asturias"] },
+      "Baleares":   { "Baleares":["Palma","Ibiza","Manacor","Mahón","Calvià","Llucmajor","Marratxí","Sant Antoni de Portmany"] },
+      "Canarias":   { "Las Palmas":["Las Palmas de Gran Canaria","Arrecife","Puerto del Rosario","Telde","Santa Lucía de Tirajana","San Bartolomé de Tirajana"],"Santa Cruz de Tenerife":["Santa Cruz de Tenerife","San Cristóbal de La Laguna","Arona","Adeje","Puerto de la Cruz","La Orotava","Granadilla de Abona"] },
+      "Cantabria":  { "Cantabria":["Santander","Torrelavega","Camargo","Castro-Urdiales","Piélagos","El Astillero","Medio Cudeyo"] },
+      "Castilla-La Mancha": { "Albacete":["Albacete","Hellín","Almansa","Villarrobledo","La Roda","Caudete"],"Ciudad Real":["Ciudad Real","Alcázar de San Juan","Puertollano","Tomelloso","Valdepeñas","Manzanares"],"Cuenca":["Cuenca","Tarancón","Motilla del Palancar","San Clemente"],"Guadalajara":["Guadalajara","Azuqueca de Henares","Cabanillas del Campo","Alovera"],"Toledo":["Toledo","Talavera de la Reina","Illescas","Consuegra","Ocaña","Seseña"] },
+      "Castilla y León": { "Ávila":["Ávila","Arenas de San Pedro","El Barco de Ávila","Arévalo"],"Burgos":["Burgos","Miranda de Ebro","Aranda de Duero","Medina de Pomar"],"León":["León","Ponferrada","San Andrés del Rabanedo","Astorga","La Bañeza"],"Palencia":["Palencia","Aguilar de Campoo","Guardo","Venta de Baños"],"Salamanca":["Salamanca","Béjar","Ciudad Rodrigo","Santa Marta de Tormes"],"Segovia":["Segovia","Cuéllar","El Espinar","San Ildefonso"],"Soria":["Soria","Almazán","El Burgo de Osma","Ágreda"],"Valladolid":["Valladolid","Medina del Campo","Laguna de Duero","Arroyo de la Encomienda"],"Zamora":["Zamora","Benavente","Toro","Puebla de Sanabria"] },
+      "Cataluña":   { "Barcelona":["Barcelona","Hospitalet de Llobregat","Badalona","Terrassa","Sabadell","Mataró","Santa Coloma de Gramenet","Cornellà de Llobregat","Sant Boi de Llobregat","Rubí"],"Girona":["Girona","Blanes","Lloret de Mar","Figueres","Olot","Salt"],"Lleida":["Lleida","Balaguer","Cervera","Mollerussa","Tàrrega"],"Tarragona":["Tarragona","Reus","Tortosa","El Vendrell","Cambrils","Salou"] },
+      "Ceuta":      { "Ceuta":["Ceuta"] },
+      "Comunidad de Madrid": { "Madrid":["Madrid","Móstoles","Alcalá de Henares","Fuenlabrada","Leganés","Getafe","Alcorcón","Torrejón de Ardoz","Parla","Alcobendas","Las Rozas","Pozuelo de Alarcón","Majadahonda","Rivas-Vaciamadrid","Collado Villalba"] },
+      "Comunidad Foral de Navarra": { "Navarra":["Pamplona","Tudela","Barañáin","Burlada","Estella","Sarriguren","Zizur Mayor"] },
+      "Comunidad Valenciana": { "Alicante":["Alicante","Benidorm","Elche","Torrevieja","Orihuela","Villena","Alcoy","Petrer","San Vicente del Raspeig"],"Castellón":["Castellón de la Plana","Benicàssim","Burriana","Vinaròs","Vila-real","Peñíscola"],"Valencia":["Valencia","Torrent","Gandia","Paterna","Sagunto","Alzira","Mislata","Burjassot","Xirivella"] },
+      "Extremadura": { "Badajoz":["Badajoz","Mérida","Don Benito","Almendralejo","Villanueva de la Serena","Zafra"],"Cáceres":["Cáceres","Plasencia","Navalmoral de la Mata","Miajadas","Trujillo"] },
+      "Galicia":    { "A Coruña":["A Coruña","Santiago de Compostela","Ferrol","Lugo","Ourense","Pontevedra","Vigo"],"Lugo":["Lugo","Monforte de Lemos","Vilalba","Sarria","Chantada"],"Ourense":["Ourense","Verín","O Barco de Valdeorras","Xinzo de Limia"],"Pontevedra":["Vigo","Pontevedra","Vilagarcía de Arousa","Redondela","Cangas","Marín","A Estrada"] },
+      "La Rioja":   { "La Rioja":["Logroño","Calahorra","Arnedo","Haro","Nájera","Alfaro"] },
+      "Melilla":    { "Melilla":["Melilla"] },
+      "País Vasco": { "Álava":["Vitoria-Gasteiz","Amurrio","Llodio","Salvatierra"],"Gipuzkoa":["San Sebastián","Irun","Errenteria","Zarautz","Eibar","Arrasate"],"Bizkaia":["Bilbao","Barakaldo","Getxo","Basauri","Leioa","Santurtzi","Portugalete"] },
+      "Región de Murcia": { "Murcia":["Murcia","Cartagena","Lorca","Molina de Segura","Alcantarilla","Mazarrón","San Javier","Torre-Pacheco","Yecla"] }
+    };
+
+    // ── Limpiar filtros al cargar ──
+    window.addEventListener("load", () => {
+      document.getElementById("filtroEspecie").value   = "";
+      document.getElementById("filtroSexo").value      = "";
+      document.getElementById("filtroEstado").value    = "";
+      document.getElementById("filtroComunidad").value = "";
+      document.getElementById("filtroProvincia").innerHTML = '<option value="">Provincia</option>';
+      document.getElementById("filtroProvincia").disabled  = true;
+      document.getElementById("filtroMunicipio").innerHTML = '<option value="">Municipio</option>';
+      document.getElementById("filtroMunicipio").disabled  = true;
+    });
+
+    // ── Cascada filtros ──
+    const filtroComunidad = document.getElementById("filtroComunidad");
+    const filtroProvincia = document.getElementById("filtroProvincia");
+    const filtroMunicipio = document.getElementById("filtroMunicipio");
+
+    filtroComunidad.addEventListener("change", () => {
+      const com = filtroComunidad.value;
+      filtroProvincia.innerHTML = '<option value="">Provincia</option>';
+      filtroMunicipio.innerHTML = '<option value="">Municipio</option>';
+      filtroProvincia.disabled = !com;
+      filtroMunicipio.disabled = true;
+      if (com) Object.keys(datosMapa[com] || {}).forEach(p => {
+        const o = document.createElement("option"); o.value = p; o.textContent = p;
+        filtroProvincia.appendChild(o);
+      });
+    });
+
+    filtroProvincia.addEventListener("change", () => {
+      const com = filtroComunidad.value, prov = filtroProvincia.value;
+      filtroMunicipio.innerHTML = '<option value="">Municipio</option>';
+      filtroMunicipio.disabled = !prov;
+      if (prov) (datosMapa[com]?.[prov] || []).forEach(m => {
+        const o = document.createElement("option"); o.value = m; o.textContent = m;
+        filtroMunicipio.appendChild(o);
+      });
+    });
+
+    // ── Utilidades ──
+    function formatFecha(f) {
+      if (!f) return "";
+      const partes = String(f).slice(0, 10).split("-");
+      if (partes.length !== 3) return f;
+      const [y, mes, d] = partes;
+      return `${d}/${mes}/${y.slice(2)}`;
+    }
+
+    function badgeColor(e) {
+      if (e === "En adopción") return "bg-success";
+      if (e === "Perdido")     return "bg-warning text-dark";
+      if (e === "Abandonado")  return "bg-danger";
+      if (e === "Adoptado")    return "bg-info text-dark";
+      return "bg-secondary";
+    }
+
+    // ── Cargar usuario ──
+    async function cargarUsuario() {
+      try {
+        const res  = await fetch("/adopciones/php/index.php");
+        if (!res.ok) throw new Error();
+        const data = await res.json();
+        document.getElementById("nombreUsuario").textContent = data.usuario;
+      } catch {
+        window.location.href = "login.html";
+      }
+    }
+
+    // ── Badge mensajes no leídos ──
+    async function cargarBadgeMensajes() {
+      try {
+        const res   = await fetch("/adopciones/php/contarMensajesNoLeidos.php");
+        const data  = await res.json();
+        const badge = document.getElementById("badgeMensajes");
+        if (badge && data.noLeidos > 0) {
+          badge.textContent = data.noLeidos > 9 ? "9+" : data.noLeidos;
+          badge.classList.remove("d-none");
+        } else if (badge) {
+          badge.classList.add("d-none");
+        }
+      } catch { /* silencioso */ }
+    }
+
+    // ── Obtener mascotas ──
+    async function obtenerMascotas(params = {}) {
+      Object.keys(params).forEach(k => { if (!params[k]) delete params[k]; });
+      const qs  = new URLSearchParams(params).toString();
+      const url = `/adopciones/php/obtenerMascotas.php${qs ? "?" + qs : ""}`;
+      try {
+        const res      = await fetch(url);
+        const mascotas = await res.json();
+        if (Array.isArray(mascotas)) mostrarMascotas(mascotas);
+        else mostrarError("Error al cargar las publicaciones.");
+      } catch {
+        mostrarError("No se pudo conectar con el servidor.");
+      }
+    }
+
+    // ── Dibujar tarjetas ──
+    function mostrarMascotas(lista) {
+      const cont = document.getElementById("contenedorPublicaciones");
+      cont.innerHTML = "";
+
+      if (!lista.length) {
+        cont.innerHTML = "<p class='text-center text-muted col-12'>No se encontraron resultados 😿</p>";
+        return;
+      }
+
+      lista.forEach(m => {
+        const nombre  = m.nombreMascota || "Sin nombre";
+        const edad    = m.edadMascota ? `${m.edadMascota} año${m.edadMascota == 1 ? "" : "s"}` : "";
+        const estado  = m.estadoAdopcionMascota || "";
+        const fecha   = formatFecha(m.fechaPublicacionMascota);
+        const inicial = (m.nombrePublicador || '?')[0].toUpperCase();
+
+        const avatarPublicador = m.idUsuarioFK1
+          ? `<img src="/adopciones/php/verFotoPerfil.php?id=${m.idUsuarioFK1}"
+                  onerror="this.outerHTML='<span class=\\'avatar-inicial\\'>${inicial}</span>'"
+                  alt="${m.nombrePublicador || ''}" />`
+          : `<span class="avatar-inicial">${inicial}</span>`;
+
+        cont.insertAdjacentHTML("beforeend", `
+          <div class="col-6 col-md-4 col-lg-3 mascota-card">
+            <div class="card border-0 shadow-sm h-100"
+                 onclick="window.location.href='mascota.html?id=${m.idMascota}'"
+                 style="cursor:pointer;">
+              <div class="img-wrapper">
+                <img src="/adopciones/php/verImagen.php?id=${m.idMascota}"
+                     alt="${nombre}"
+                     onerror="this.src='/adopciones/assets/no-imagen.png'">
+                ${m.adoptado == 1 ? '<div class="overlay-adoptado"><span>Adoptado</span></div>' : ""}
+              </div>
+              <div class="card-body d-flex flex-column">
+                <h5 class="card-title mb-1">${nombre}</h5>
+                <p class="card-text text-muted mb-1 small">
+                  ${m.especieMascota || ""} • ${m.sexoMascota || ""} • ${edad}
+                </p>
+                <p class="text-muted small mb-1">
+                  <i class="bi bi-geo-alt-fill text-danger"></i> ${m.lugarMascota || ""}
+                </p>
+                <p class="text-muted small mb-1">
+                  <i class="bi bi-calendar3"></i> ${fecha}
+                </p>
+                <div class="pub-autor mb-2">
+                  ${avatarPublicador}
+                  <span>${m.nombrePublicador || ""}</span>
+                </div>
+                <div class="mt-auto">
+                  <span class="badge ${badgeColor(estado)} badge-estado">${estado}</span>
+                </div>
+              </div>
+            </div>
+          </div>`);
+      });
+    }
+
+    function mostrarError(msg) {
+      document.getElementById("contenedorPublicaciones").innerHTML =
+        `<p class='text-center text-danger col-12'>${msg}</p>`;
+    }
+
+    // ── Filtros ──
+    function aplicarFiltros() {
+      obtenerMascotas({
+        busqueda:  document.getElementById("inputBusqueda").value.trim(),
+        especie:   document.getElementById("filtroEspecie").value,
+        sexo:      document.getElementById("filtroSexo").value,
+        estado:    document.getElementById("filtroEstado").value,
+        comunidad: filtroComunidad.value,
+        provincia: filtroProvincia.value,
+        municipio: filtroMunicipio.value
+      });
+    }
+
+    document.getElementById("btnBuscar").addEventListener("click", aplicarFiltros);
+    document.getElementById("btnFiltrar").addEventListener("click", aplicarFiltros);
+    document.getElementById("inputBusqueda").addEventListener("keydown", e => {
+      if (e.key === "Enter") aplicarFiltros();
+    });
+
+    // ============================================================
+    // CARRUSEL ÚLTIMOS PERDIDOS
+    // ============================================================
+    let carruselDatos     = [];
+    let carruselPagina    = 0;
+    let carruselIntervalo = null;
+    const POR_PAGINA      = 3;
+
+    async function cargarPerdidos() {
+      try {
+        const res   = await fetch("/adopciones/php/obtenerMascotas.php?estado=Perdido");
+        const lista = await res.json();
+        if (!Array.isArray(lista) || !lista.length) return;
+        carruselDatos = lista;
+        construirDots();
+        mostrarGrupo(0, false);
+        carruselIntervalo = setInterval(avanzarCarrusel, 10000);
+      } catch { /* silencioso */ }
+    }
+
+    function construirDots() {
+      const cont   = document.getElementById("carruselDots");
+      const grupos = Math.ceil(carruselDatos.length / POR_PAGINA);
+      cont.innerHTML = "";
+      for (let i = 0; i < grupos; i++) {
+        const dot = document.createElement("div");
+        dot.className = "carrusel-dot" + (i === 0 ? " activo" : "");
+        dot.addEventListener("click", () => {
+          clearInterval(carruselIntervalo);
+          mostrarGrupo(i, true);
+          carruselIntervalo = setInterval(avanzarCarrusel, 10000);
+        });
+        cont.appendChild(dot);
+      }
+    }
+
+    function actualizarDots(pagina) {
+      document.querySelectorAll(".carrusel-dot").forEach((d, i) => {
+        d.classList.toggle("activo", i === pagina);
+      });
+    }
+
+    function avanzarCarrusel() {
+      const grupos    = Math.ceil(carruselDatos.length / POR_PAGINA);
+      const siguiente = (carruselPagina + 1) % grupos;
+      mostrarGrupo(siguiente, true);
+    }
+
+    function mostrarGrupo(pagina, animar) {
+      const track  = document.getElementById("carruselTrack");
+      const inicio = pagina * POR_PAGINA;
+      const grupo  = carruselDatos.slice(inicio, inicio + POR_PAGINA);
+
+      function renderizar() {
+        track.innerHTML = "";
+        track.classList.remove("animar-entrar", "animar-salir");
+
+        grupo.forEach(m => {
+          const nombre  = m.nombreMascota || "Sin nombre";
+          const edad    = m.edadMascota ? `${m.edadMascota} año${m.edadMascota == 1 ? "" : "s"}` : "";
+          const sub     = [m.especieMascota, m.sexoMascota, edad].filter(Boolean).join(" • ");
+          const fecha   = formatFecha(m.fechaPublicacionMascota);
+          const inicial = (m.nombrePublicador || "?")[0].toUpperCase();
+
+          const avatarHtml = m.idUsuarioFK1
+            ? `<img src="/adopciones/php/verFotoPerfil.php?id=${m.idUsuarioFK1}"
+                    onerror="this.outerHTML='<span class=\\'avatar-inicial\\'>${inicial}</span>'"
+                    alt="${m.nombrePublicador || ''}" />`
+            : `<span class="avatar-inicial">${inicial}</span>`;
+
+          const card = document.createElement("div");
+          card.className = "carrusel-card";
+          card.onclick   = () => window.location.href = `mascota.html?id=${m.idMascota}`;
+          card.innerHTML = `
+            <img src="/adopciones/php/verImagen.php?id=${m.idMascota}"
+                 alt="${nombre}"
+                 onerror="this.src='/adopciones/assets/no-imagen.png'" />
+            <div class="carrusel-card-body">
+              <div class="carrusel-card-nombre">${nombre}</div>
+              <div class="carrusel-card-sub">${sub}</div>
+              <div class="carrusel-card-lugar">
+                <i class="bi bi-geo-alt-fill text-danger"></i> ${m.lugarMascota || ""}
+              </div>
+              <div class="carrusel-card-fecha">
+                <i class="bi bi-calendar3"></i> ${fecha}
+              </div>
+              <div class="carrusel-card-autor">
+                ${avatarHtml}
+                <span>${m.nombrePublicador || ""}</span>
+              </div>
+              <span class="badge bg-warning text-dark badge-estado">Perdido</span>
+            </div>`;
+          track.appendChild(card);
+        });
+
+        if (animar) {
+          void track.offsetWidth;
+          track.classList.add("animar-entrar");
+        }
+
+        carruselPagina = pagina;
+        actualizarDots(pagina);
+      }
+
+      if (animar && track.children.length > 0) {
+        track.classList.add("animar-salir");
+        setTimeout(renderizar, 600);
+      } else {
+        renderizar();
+      }
+    }
+
+    // ── Inicio ──
+    cargarUsuario();
+    obtenerMascotas();
+    cargarBadgeMensajes();
+    cargarPerdidos();
+  </script>
+<!-- FOOTER -->
+<footer class="footer-adopciones">
+  <div class="container">
+    <div class="row g-4 pb-3">
+
+      <!-- Marca -->
+      <div class="col-12 col-md-4">
+        <div class="footer-brand">
+          <img src="/adopciones/assets/logo.png" alt="Logo"
+               style="width:28px;height:28px;object-fit:contain;filter:brightness(10);" />
+          Adopta
+        </div>
+        <p class="footer-desc">
+          Conectamos animales que necesitan un hogar con personas dispuestas a dárselo.
+          Juntos hacemos un mundo mejor 🐾
+        </p>
+      </div>
+
+      <!-- Navegación -->
+      <div class="col-6 col-md-2">
+        <div class="footer-titulo">Navegación</div>
+        <a href="/adopciones/public/index.html">Inicio</a>
+        <a href="/adopciones/public/publicar.html" target="_blank">Publicar animal</a>
+        <a href="/adopciones/public/favoritos.html">Mis favoritos</a>
+        <a href="/adopciones/public/mensajes.html">Mensajes</a>
+      </div>
+
+      <!-- Mi cuenta -->
+      <div class="col-6 col-md-2">
+        <div class="footer-titulo">Mi cuenta</div>
+        <a href="/adopciones/public/perfil.html">Mi perfil</a>
+        <a href="/adopciones/public/publicaciones.html">Mis publicaciones</a>
+      </div>
+
+      <!-- Info -->
+      <div class="col-12 col-md-4">
+        <div class="footer-titulo">¿Encontraste un animal?</div>
+        <p class="footer-info-text">
+          Si has encontrado un animal perdido o abandonado, comprueba si lleva chip
+          consultando con un veterinario o la policía local antes de publicarlo.
+          Tu ayuda puede cambiar su vida. 💙
+        </p>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="footer-bottom">
+    © 2026 Adopta — Proyecto Integrado · Desarrollo de Aplicaciones Web
+  </div>
+</footer>
+</body>
+</html>

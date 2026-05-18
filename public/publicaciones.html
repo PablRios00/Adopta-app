@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tus publicaciones | Adopta</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet" />
+  <link rel="stylesheet" href="/adopciones/assets/estilos.css" />
+  <link rel="stylesheet" href="/adopciones/assets/perfil-layout.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet" />
+</head>
+<body>
+  <nav class="navbar-adopciones">
+    <a class="navbar-brand" href="index.html">
+      <img src="/adopciones/assets/logo.png" alt="Logo" />
+      <span>Adopta</span>
+    </a>
+    <div class="nav-icons">
+      <i class="bi bi-heart-fill nav-item-icon"
+         onclick="window.location.href='favoritos.html'" title="Favoritos"></i>
+      <i class="bi bi-envelope-fill nav-item-icon"
+         onclick="window.location.href='mensajes.html'" title="Buzón"></i>
+      <span id="nombreUsuarioNav" class="navbar-usuario"
+            onclick="window.location.href='perfil.html'"></span>
+    </div>
+  </nav>
+
+  <div class="perfil-wrapper">
+    <aside class="perfil-sidebar">
+      <img id="avatarSidebar" src="/adopciones/assets/avatar-default.png" alt="Avatar" class="sidebar-avatar" />
+      <p class="sidebar-nombre" id="sidebarNombre">Cargando...</p>
+      <a href="perfil.html"        class="sidebar-btn"><i class="bi bi-person-circle"></i> Perfil</a>
+      <a href="publicaciones.html" class="sidebar-btn activo"><i class="bi bi-card-image"></i> Tus publicaciones</a>
+      <a href="favoritos.html"     class="sidebar-btn"><i class="bi bi-heart-fill"></i> Mis favoritos</a>
+      <a href="mensajes.html"      class="sidebar-btn"><i class="bi bi-chat-dots-fill"></i> Bandeja de mensajes</a>
+      <div class="sidebar-divider"></div>
+      <button class="sidebar-btn btn-cerrar-sesion" id="btnCerrarSesion">
+        <i class="bi bi-box-arrow-right"></i> Cerrar sesión
+      </button>
+    </aside>
+
+    <main class="perfil-contenido">
+      <h4 class="panel-titulo"><i class="bi bi-card-image me-2"></i>Tus publicaciones</h4>
+      <div class="row g-3" id="listaMisPublicaciones">
+        <p class="text-muted text-center">Cargando...</p>
+      </div>
+    </main>
+  </div>
+
+  <!-- MODAL EDITAR -->
+  <div class="modal fade" id="modalEditarPublicacion" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content border-0 shadow">
+        <div class="modal-header border-0">
+          <h5 class="modal-title titulo-principal">✏️ Editar publicación</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <form id="formEditarPublicacion" enctype="multipart/form-data">
+            <input type="hidden" id="editPubId" name="idMascota" />
+            <div class="mb-3">
+              <label class="form-label form-edit-label">Nombre</label>
+              <input type="text" id="editPubNombre" name="nombreMascota" class="form-control" required />
+            </div>
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label form-edit-label">Especie</label>
+                <select id="editPubEspecie" name="especieMascota" class="form-select" required>
+                  <option>Perro</option><option>Gato</option>
+                  <option>Ave</option><option>Reptil</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label form-edit-label">Sexo</label>
+                <select id="editPubSexo" name="sexoMascota" class="form-select" required>
+                  <option>Macho</option><option>Hembra</option>
+                </select>
+              </div>
+            </div>
+            <div class="row g-3 mt-1">
+              <div class="col-md-6">
+                <label class="form-label form-edit-label">Edad (años)</label>
+                <input type="number" min="0" id="editPubEdad" name="edadMascota" class="form-control" required />
+              </div>
+              <div class="col-md-6">
+                <label class="form-label form-edit-label">Raza</label>
+                <input type="text" id="editPubRaza" name="razaMascota" class="form-control" required />
+              </div>
+            </div>
+            <div class="mb-3 mt-3">
+              <label class="form-label form-edit-label">Descripción</label>
+              <textarea id="editPubDescripcion" name="descripcionMascota" class="form-control" rows="3" required></textarea>
+            </div>
+            <div class="mb-1">
+              <label class="form-label form-edit-label">Lugar de publicación</label>
+            </div>
+            <div class="row g-3 mb-3">
+              <div class="col-md-4">
+                <select id="editPubComunidad" class="form-select">
+                  <option value="">Comunidad Autónoma</option>
+                  <option>Andalucía</option><option>Aragón</option><option>Asturias</option>
+                  <option>Baleares</option><option>Canarias</option><option>Cantabria</option>
+                  <option>Castilla-La Mancha</option><option>Castilla y León</option>
+                  <option>Cataluña</option><option>Ceuta</option>
+                  <option>Comunidad de Madrid</option><option>Comunidad Foral de Navarra</option>
+                  <option>Comunidad Valenciana</option><option>Extremadura</option>
+                  <option>Galicia</option><option>La Rioja</option>
+                  <option>Melilla</option><option>País Vasco</option>
+                  <option>Región de Murcia</option>
+                </select>
+              </div>
+              <div class="col-md-4">
+                <select id="editPubProvincia" class="form-select" disabled>
+                  <option value="">Provincia</option>
+                </select>
+              </div>
+              <div class="col-md-4">
+                <select id="editPubMunicipio" class="form-select" disabled>
+                  <option value="">Municipio</option>
+                </select>
+              </div>
+            </div>
+            <input type="hidden" name="lugarMascota" id="editPubLugar" />
+            <div class="mb-3">
+              <label class="form-label form-edit-label">Estado</label>
+              <select id="editPubEstado" name="estadoAdopcionMascota" class="form-select" required>
+                <option>En adopción</option><option>Perdido</option><option>Abandonado</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label class="form-label form-edit-label">Cambiar foto <small class="text-muted">(opcional)</small></label>
+              <input type="file" name="foto1" class="form-control" accept="image/*" />
+            </div>
+            <div id="msgEditarPub" class="text-center mb-2" style="min-height:1.4em;font-size:0.9rem;"></div>
+            <button type="submit" class="btn btn-principal w-100">
+              <i class="bi bi-floppy2-fill me-1"></i> Guardar cambios
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="/adopciones/assets/perfil-common.js"></script>
+  <script>
+
+    // ── Utilidades ──
+    function formatFecha(f) {
+      if (!f) return "";
+      const partes = String(f).slice(0, 10).split("-");
+      if (partes.length !== 3) return f;
+      const [y, mes, d] = partes;
+      return `${d}/${mes}/${y.slice(2)}`;
+    }
+
+    function badgeColor(e) {
+      if (e === "En adopción") return "bg-success";
+      if (e === "Perdido")     return "bg-warning text-dark";
+      if (e === "Abandonado")  return "bg-danger";
+      if (e === "Adoptado")    return "bg-info text-dark";
+      return "bg-secondary";
+    }
+
+    // ── Cargar publicaciones ──
+    async function cargarMisPublicaciones() {
+      const cont = document.getElementById("listaMisPublicaciones");
+      cont.innerHTML = "<p class='text-muted text-center'>Cargando...</p>";
+      try {
+        const res   = await fetch("/adopciones/php/misPublicaciones.php");
+        const lista = await res.json();
+        cont.innerHTML = "";
+
+        if (!lista.length) {
+          cont.innerHTML = `<div class="vacio-msg col-12">
+            <i class="bi bi-card-image"></i>
+            <p>Aún no has publicado ningún animal.</p>
+          </div>`;
+          return;
+        }
+
+        lista.forEach(m => {
+          // Avatar del publicador
+          const inicial     = (m.nombrePublicador || '?')[0].toUpperCase();
+          const tieneF      = parseInt(m.tieneFoto) === 1;
+          const avatarAutor = tieneF
+            ? `<img src="/adopciones/php/verFotoPerfil.php?id=${m.idPublicador}" alt="${m.nombrePublicador}" />`
+            : `<span class="avatar-inicial">${inicial}</span>`;
+
+          const adoptado = parseInt(m.adoptado) === 1;
+
+          const col = document.createElement("div");
+          col.className = "col-6 col-md-4 col-lg-3 pub-card";
+          col.id = `pubcard-${m.idMascota}`;
+          col.innerHTML = `
+            <div class="card h-100">
+              <div class="img-wrapper" style="cursor:pointer;">
+                <img src="/adopciones/php/verImagen.php?id=${m.idMascota}"
+                     alt="${m.nombreMascota}"
+                     onerror="this.src='/adopciones/assets/no-imagen.png'">
+                ${adoptado ? '<div class="overlay-adoptado"><span>Adoptado</span></div>' : ""}
+              </div>
+              <div class="card-body d-flex flex-column">
+                <h6 class="card-title mb-1">${m.nombreMascota}</h6>
+                <p class="text-muted small mb-1">
+                  <i class="bi bi-geo-alt-fill text-danger"></i> ${m.lugarMascota || ""}
+                </p>
+                <p class="text-muted small mb-1">
+                  <i class="bi bi-calendar3"></i> ${formatFecha(m.fechaPublicacionMascota)}
+                </p>
+                <div class="pub-autor mb-2">
+                  ${avatarAutor}
+                  <span>${m.nombrePublicador || "Tú"}</span>
+                </div>
+                <div class="mt-auto pt-2">
+                  <div class="mb-2">
+                    <span class="badge ${badgeColor(m.estadoAdopcionMascota)} badge-estado">
+                      ${m.estadoAdopcionMascota}
+                    </span>
+                  </div>
+                  <div class="d-flex gap-1 flex-wrap acciones-card">
+                    ${adoptado
+                      ? `<span class="badge bg-success py-2">✓ Adoptado</span>`
+                      : `<button class="btn btn-sm btn-success btn-adoptado">
+                           <i class="bi bi-check2-circle"></i> Adoptado
+                         </button>`
+                    }
+                    <button class="btn btn-sm btn-outline-primary btn-editar">
+                      <i class="bi bi-pencil-fill"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger btn-eliminar">
+                      <i class="bi bi-trash3-fill"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>`;
+
+          // Eventos
+          col.querySelector(".img-wrapper").addEventListener("click", () => {
+            window.location.href = `mascota.html?id=${m.idMascota}`;
+          });
+
+          const btnAdoptado = col.querySelector(".btn-adoptado");
+          if (btnAdoptado) {
+            btnAdoptado.addEventListener("click", () =>
+              marcarAdoptado(m.idMascota, m.nombreMascota, col));
+          }
+
+          col.querySelector(".btn-editar").addEventListener("click", () => abrirEdicion(m));
+          col.querySelector(".btn-eliminar").addEventListener("click", () =>
+            confirmarEliminar(m.idMascota, m.nombreMascota, col));
+
+          cont.appendChild(col);
+        });
+
+      } catch(err) {
+        console.error("Error al cargar publicaciones:", err);
+        cont.innerHTML = "<p class='text-danger text-center'>Error al cargar publicaciones.</p>";
+      }
+    }
+
+    // ── Marcar adoptado ──
+    async function marcarAdoptado(id, nombre, col) {
+      if (!confirm(`¿Confirmas que "${nombre}" ya ha sido adoptado?`)) return;
+      const datos = new FormData();
+      datos.append("idMascota", id);
+      try {
+        const res   = await fetch("/adopciones/php/marcarAdoptado.php", { method: "POST", body: datos });
+        const texto = await res.text();
+        if (texto.trim() === "success") {
+          const wrapper = col.querySelector(".img-wrapper");
+          if (wrapper && !wrapper.querySelector(".overlay-adoptado")) {
+            const overlay = document.createElement("div");
+            overlay.className = "overlay-adoptado";
+            overlay.innerHTML = "<span>Adoptado</span>";
+            wrapper.appendChild(overlay);
+          }
+          const btnAdoptado = col.querySelector(".btn-adoptado");
+          if (btnAdoptado) {
+            const badge = document.createElement("span");
+            badge.className = "badge bg-success py-2";
+            badge.textContent = "✓ Adoptado";
+            btnAdoptado.replaceWith(badge);
+          }
+          const badgeEstado = col.querySelector(".badge-estado");
+          if (badgeEstado) {
+            badgeEstado.className = "badge bg-info text-dark badge-estado";
+            badgeEstado.textContent = "Adoptado";
+          }
+        } else {
+          alert("Error: " + texto);
+        }
+      } catch(err) {
+        console.error("Error marcarAdoptado:", err);
+        alert("Error al conectar con el servidor.");
+      }
+    }
+
+    // ── Eliminar ──
+    function confirmarEliminar(id, nombre, col) {
+      if (!confirm(`¿Seguro que quieres eliminar la publicación de "${nombre}"?\nEsta acción no se puede deshacer.`)) return;
+      eliminarPublicacion(id, col);
+    }
+
+    async function eliminarPublicacion(id, col) {
+      try {
+        const datos = new FormData();
+        datos.append("idMascota", id);
+        const res   = await fetch("/adopciones/php/eliminarPublicacion.php", { method: "POST", body: datos });
+        const texto = await res.text();
+        if (texto.trim() === "success") {
+          col.style.transition = "opacity 0.3s";
+          col.style.opacity    = "0";
+          setTimeout(() => col.remove(), 300);
+        } else {
+          alert("Error al eliminar: " + texto);
+        }
+      } catch(err) {
+        console.error("Error eliminarPublicacion:", err);
+        alert("Error al conectar con el servidor.");
+      }
+    }
+
+    // ── Abrir modal edición ──
+    function abrirEdicion(m) {
+      document.getElementById("editPubId").value          = m.idMascota;
+      document.getElementById("editPubNombre").value      = m.nombreMascota;
+      document.getElementById("editPubEspecie").value     = m.especieMascota;
+      document.getElementById("editPubSexo").value        = m.sexoMascota;
+      document.getElementById("editPubEdad").value        = m.edadMascota;
+      document.getElementById("editPubRaza").value        = m.razaMascota;
+      document.getElementById("editPubDescripcion").value = m.descripcionMascota;
+      document.getElementById("editPubEstado").value      = m.estadoAdopcionMascota;
+      document.getElementById("msgEditarPub").textContent = "";
+
+      const partes    = (m.lugarMascota || "").split(",").map(s => s.trim());
+      const comunidad = partes[0] || "";
+      const provincia = partes[1] || "";
+      const municipio = partes[2] || "";
+
+      const selCom = document.getElementById("editPubComunidad");
+      const selPro = document.getElementById("editPubProvincia");
+      const selMun = document.getElementById("editPubMunicipio");
+
+      selCom.value = comunidad;
+      selPro.innerHTML = '<option value="">Provincia</option>';
+      selPro.disabled  = !comunidad;
+      if (comunidad && datosMapa[comunidad]) {
+        Object.keys(datosMapa[comunidad]).forEach(p => {
+          const o = document.createElement("option");
+          o.value = p; o.textContent = p; selPro.appendChild(o);
+        });
+        selPro.value = provincia;
+      }
+      selMun.innerHTML = '<option value="">Municipio</option>';
+      selMun.disabled  = !provincia;
+      if (comunidad && provincia && datosMapa[comunidad]?.[provincia]) {
+        datosMapa[comunidad][provincia].forEach(mu => {
+          const o = document.createElement("option");
+          o.value = mu; o.textContent = mu; selMun.appendChild(o);
+        });
+        selMun.value = municipio;
+      }
+      document.getElementById("editPubLugar").value = m.lugarMascota || "";
+      new bootstrap.Modal(document.getElementById("modalEditarPublicacion")).show();
+    }
+
+    // ── Cascada modal ──
+    document.getElementById("editPubComunidad").addEventListener("change", () => {
+      const com    = document.getElementById("editPubComunidad").value;
+      const selPro = document.getElementById("editPubProvincia");
+      const selMun = document.getElementById("editPubMunicipio");
+      selPro.innerHTML = '<option value="">Provincia</option>';
+      selMun.innerHTML = '<option value="">Municipio</option>';
+      selPro.disabled = !com; selMun.disabled = true;
+      document.getElementById("editPubLugar").value = "";
+      if (com && datosMapa[com]) Object.keys(datosMapa[com]).forEach(p => {
+        const o = document.createElement("option");
+        o.value = p; o.textContent = p; selPro.appendChild(o);
+      });
+    });
+
+    document.getElementById("editPubProvincia").addEventListener("change", () => {
+      const com    = document.getElementById("editPubComunidad").value;
+      const prov   = document.getElementById("editPubProvincia").value;
+      const selMun = document.getElementById("editPubMunicipio");
+      selMun.innerHTML = '<option value="">Municipio</option>';
+      selMun.disabled  = !prov;
+      document.getElementById("editPubLugar").value = "";
+      if (com && prov && datosMapa[com]?.[prov]) datosMapa[com][prov].forEach(mu => {
+        const o = document.createElement("option");
+        o.value = mu; o.textContent = mu; selMun.appendChild(o);
+      });
+    });
+
+    document.getElementById("editPubMunicipio").addEventListener("change", () => {
+      const com  = document.getElementById("editPubComunidad").value;
+      const prov = document.getElementById("editPubProvincia").value;
+      const mun  = document.getElementById("editPubMunicipio").value;
+      document.getElementById("editPubLugar").value = `${com}, ${prov}, ${mun}`;
+    });
+
+    // ── Guardar edición ──
+    document.getElementById("formEditarPublicacion").addEventListener("submit", async e => {
+      e.preventDefault();
+      const msg   = document.getElementById("msgEditarPub");
+      const datos = new FormData(e.target);
+      if (!document.getElementById("editPubLugar").value) {
+        msg.className   = "text-danger";
+        msg.textContent = "Por favor selecciona Comunidad, Provincia y Municipio.";
+        return;
+      }
+      try {
+        const res   = await fetch("/adopciones/php/editarPublicacion.php", { method: "POST", body: datos });
+        const texto = await res.text();
+        if (texto.trim() === "success") {
+          msg.className   = "text-success";
+          msg.textContent = "✅ Publicación actualizada.";
+          cargarMisPublicaciones();
+          setTimeout(() =>
+            bootstrap.Modal.getInstance(
+              document.getElementById("modalEditarPublicacion")).hide(), 1200);
+        } else {
+          msg.className   = "text-danger";
+          msg.textContent = texto;
+        }
+      } catch {
+        msg.className   = "text-danger";
+        msg.textContent = "Error al conectar con el servidor.";
+      }
+    });
+
+    // ── Inicio ──
+    inicializar().then(() => cargarMisPublicaciones());
+  </script>
+<!-- FOOTER -->
+<footer class="footer-adopciones">
+  <div class="container">
+    <div class="row g-4 pb-3">
+
+      <!-- Marca -->
+      <div class="col-12 col-md-4">
+        <div class="footer-brand">
+          <img src="/adopciones/assets/logo.png" alt="Logo"
+               style="width:28px;height:28px;object-fit:contain;filter:brightness(10);" />
+          Adopta
+        </div>
+        <p class="footer-desc">
+          Conectamos animales que necesitan un hogar con personas dispuestas a dárselo.
+          Juntos hacemos un mundo mejor 🐾
+        </p>
+      </div>
+
+      <!-- Navegación -->
+      <div class="col-6 col-md-2">
+        <div class="footer-titulo">Navegación</div>
+        <a href="/adopciones/public/index.html">Inicio</a>
+        <a href="/adopciones/public/publicar.html" target="_blank">Publicar animal</a>
+        <a href="/adopciones/public/favoritos.html">Mis favoritos</a>
+        <a href="/adopciones/public/mensajes.html">Mensajes</a>
+      </div>
+
+      <!-- Mi cuenta -->
+      <div class="col-6 col-md-2">
+        <div class="footer-titulo">Mi cuenta</div>
+        <a href="/adopciones/public/perfil.html">Mi perfil</a>
+        <a href="/adopciones/public/publicaciones.html">Mis publicaciones</a>
+      </div>
+
+      <!-- Info -->
+      <div class="col-12 col-md-4">
+        <div class="footer-titulo">¿Encontraste un animal?</div>
+        <p class="footer-info-text">
+          Si has encontrado un animal perdido o abandonado, comprueba si lleva chip
+          consultando con un veterinario o la policía local antes de publicarlo.
+          Tu ayuda puede cambiar su vida. 💙
+        </p>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="footer-bottom">
+    © 2026 Adopta — Proyecto Integrado · Desarrollo de Aplicaciones Web
+  </div>
+</footer>
+</body>
+</html>

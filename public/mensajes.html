@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mensajes | Adopta</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet" />
+  <link rel="stylesheet" href="/adopciones/assets/estilos.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    .chat-lista-header {
+      padding: 0.9rem 1rem;
+      border-bottom: 2px solid #e5ecf4;
+      background: #fff;
+    }
+    .btn-volver-chat {
+      background: none;
+      border: none;
+      color: var(--color-principal-oscuro);
+      font-family: 'Poppins', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.3rem 0.6rem;
+      border-radius: 8px;
+      transition: background 0.2s;
+    }
+    .btn-volver-chat:hover { background: #eef5fc; }
+    .btn-volver-chat i { font-size: 1.1rem; }
+    .conv-mascota {
+      font-size: 0.72rem;
+      color: var(--color-principal-oscuro);
+      font-weight: 500;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  </style>
+</head>
+<body>
+  <nav class="navbar-adopciones">
+    <a class="navbar-brand" href="index.html">
+      <img src="/adopciones/assets/logo.png" alt="Logo" />
+      <span>Adopta</span>
+    </a>
+    <div class="nav-icons">
+      <i class="bi bi-heart-fill nav-item-icon"
+         onclick="window.location.href='favoritos.html'" title="Favoritos"></i>
+      <i class="bi bi-envelope-fill nav-item-icon"
+         onclick="window.location.href='mensajes.html'" title="Buzón"></i>
+      <span id="nombreUsuarioNav" class="navbar-usuario"
+            onclick="window.location.href='perfil.html'"></span>
+    </div>
+  </nav>
+
+  <div class="chat-wrapper">
+    <div class="chat-lista" id="listaConvWrapper">
+      <div class="chat-lista-header">
+        <button class="btn-volver-chat" onclick="window.location.href='index.html'">
+          <i class="bi bi-arrow-left-circle-fill"></i> Volver al inicio
+        </button>
+      </div>
+      <div id="listaConv">
+        <div class="sin-conv"><i class="bi bi-chat-dots"></i><p>Cargando...</p></div>
+      </div>
+    </div>
+
+    <div class="chat-panel" id="chatPanel">
+      <div class="chat-header" id="chatHeader">
+        <i class="bi bi-chat-dots-fill" style="color:var(--color-principal)"></i>
+        <span>Selecciona una conversación</span>
+      </div>
+      <div class="chat-mensajes" id="chatMensajes">
+        <div class="sin-conv">
+          <i class="bi bi-chat-left-dots"></i>
+          <p>Aquí aparecerán los mensajes</p>
+        </div>
+      </div>
+      <div class="chat-input-area">
+        <input type="text" id="inputMensaje" placeholder="Escribe un mensaje..." />
+        <button class="btn-send" id="btnEnviar">
+          <i class="bi bi-send-fill"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    let miId           = null;
+    let contactoActivo = null;
+    let mascotaActiva  = null;
+    let intervalo      = null;
+
+    // ── Sesión ──
+    async function inicializar() {
+      try {
+        const res  = await fetch("/adopciones/php/index.php");
+        if (!res.ok) throw new Error();
+        const data = await res.json();
+        document.getElementById("nombreUsuarioNav").textContent = data.usuario;
+        miId = data.id;
+      } catch {
+        window.location.href = "login.html";
+      }
+    }
+
+    // ── Lista de conversaciones ──
+    async function cargarConversaciones() {
+      try {
+        const res   = await fetch("/adopciones/php/misMensajes.php");
+        const lista = await res.json();
+        const cont  = document.getElementById("listaConv");
+        cont.innerHTML = "";
+
+        if (!lista.length) {
+          cont.innerHTML = `<div class="sin-conv">
+            <i class="bi bi-chat-dots"></i>
+            <p>Sin conversaciones aún</p>
+          </div>`;
+          return;
+        }
+
+        lista.forEach(conv => {
+          const avatarHtml = conv.tieneFoto
+            ? `<img src="/adopciones/php/verFotoPerfil.php?id=${conv.otroId}"
+                    alt="${conv.otroUsuario}" />`
+            : `<i class="bi bi-person-fill"></i>`;
+
+          const esActiva = contactoActivo == conv.otroId &&
+                           String(mascotaActiva ?? "") === String(conv.idMascota ?? "");
+
+          const div = document.createElement("div");
+          div.className = "conv-item" + (esActiva ? " activa" : "");
+          div.innerHTML = `
+            <div class="conv-avatar">${avatarHtml}</div>
+            <div class="conv-info">
+              <div class="conv-nombre">${conv.otroUsuario}</div>
+              ${conv.nombreMascota
+                ? `<div class="conv-mascota">🐾 ${conv.nombreMascota}</div>`
+                : ""}
+              <div class="conv-preview">${conv.ultimoMensaje || ""}</div>
+            </div>
+            <div class="conv-meta">
+              <span class="conv-fecha">
+                ${conv.fecha
+                  ? conv.fecha.slice(0,10).split("-").reverse().join("/")
+                  : ""}
+              </span>
+              ${conv.noLeidos > 0
+                ? `<span class="conv-badge">${conv.noLeidos}</span>`
+                : ""}
+            </div>`;
+
+          div.addEventListener("click", () =>
+            abrirConversacion(
+              conv.otroId,
+              conv.otroUsuario,
+              conv.idMascota || null,
+              conv.tieneFoto,
+              conv.nombreMascota || null
+            ));
+          cont.appendChild(div);
+        });
+
+      } catch(err) {
+        console.error("Error cargarConversaciones:", err);
+      }
+    }
+
+    // ── Abrir conversación ──
+    async function abrirConversacion(idContacto, nombre, idMascota, tieneFoto, nombreMascota) {
+      contactoActivo = idContacto;
+      mascotaActiva  = idMascota || null;
+
+      const avatarHtml = tieneFoto
+        ? `<img src="/adopciones/php/verFotoPerfil.php?id=${idContacto}" alt="${nombre}" />`
+        : `<i class="bi bi-person-circle" style="color:var(--color-principal);font-size:1.6rem;"></i>`;
+
+      const subtitulo = nombreMascota
+        ? `<small class="text-muted ms-2" style="font-size:0.8rem;font-weight:400;">
+             🐾 ${nombreMascota}
+           </small>`
+        : "";
+
+      document.getElementById("chatHeader").innerHTML =
+        `${avatarHtml}<span>${nombre}${subtitulo}</span>`;
+      document.getElementById("chatPanel").classList.add("visible");
+
+      // Marcar activa en lista
+      document.querySelectorAll(".conv-item").forEach(el => {
+        el.classList.remove("activa");
+      });
+      document.querySelectorAll(".conv-item").forEach(el => {
+        const nEl = el.querySelector(".conv-nombre")?.textContent?.trim();
+        const mEl = el.querySelector(".conv-mascota")?.textContent?.trim()
+                      .replace("🐾 ", "") || null;
+        const coincideNombre  = nEl === nombre;
+        const coincideMascota = (!mEl && !nombreMascota) ||
+                                (mEl === nombreMascota);
+        if (coincideNombre && coincideMascota) el.classList.add("activa");
+      });
+
+      await cargarMensajes();
+      clearInterval(intervalo);
+      intervalo = setInterval(cargarMensajes, 4000);
+    }
+
+    // ── Cargar mensajes ──
+    async function cargarMensajes() {
+      if (!contactoActivo) return;
+      try {
+        let url = `/adopciones/php/obtenerConversacion.php?con=${contactoActivo}`;
+        if (mascotaActiva !== null && mascotaActiva !== undefined) {
+          url += `&mascota=${mascotaActiva}`;
+        }
+
+        const res   = await fetch(url);
+        const lista = await res.json();
+        const cont  = document.getElementById("chatMensajes");
+        const abajo = cont.scrollHeight - cont.scrollTop - cont.clientHeight < 60;
+        cont.innerHTML = "";
+
+        if (!lista.length) {
+          cont.innerHTML = `<div class="sin-conv">
+            <i class="bi bi-chat-left-dots"></i>
+            <p>Sé el primero en escribir</p>
+          </div>`;
+          return;
+        }
+
+        lista.forEach(msg => {
+          const esMio   = msg.idEmisorFK == miId;
+          const hora    = msg.fechaMensaje ? msg.fechaMensaje.slice(11, 16) : "";
+          const burbuja = document.createElement("div");
+          burbuja.className = `burbuja ${esMio ? "mia" : "suya"}`;
+          burbuja.innerHTML = `${msg.contenido}<span class="hora">${hora}</span>`;
+          cont.appendChild(burbuja);
+        });
+
+        if (abajo) cont.scrollTop = cont.scrollHeight;
+        cargarConversaciones();
+      } catch(err) {
+        console.error("Error cargarMensajes:", err);
+      }
+    }
+
+    // ── Enviar mensaje ──
+    async function enviarMensaje() {
+      const input = document.getElementById("inputMensaje");
+      const texto = input.value.trim();
+      if (!texto || !contactoActivo) return;
+
+      const datos = new FormData();
+      datos.append("idReceptor", contactoActivo);
+      datos.append("contenido",  texto);
+      if (mascotaActiva !== null && mascotaActiva !== undefined) {
+        datos.append("idMascota", mascotaActiva);
+      }
+      input.value = "";
+
+      try {
+        const res = await fetch("/adopciones/php/enviarMensaje.php", {
+          method: "POST",
+          body: datos
+        });
+        const txt = await res.text();
+        if (txt.trim() === "success") {
+          await cargarMensajes();
+        } else {
+          console.error("Error enviarMensaje:", txt);
+        }
+      } catch(err) {
+        console.error("Error enviarMensaje:", err);
+      }
+    }
+
+    document.getElementById("btnEnviar").addEventListener("click", enviarMensaje);
+    document.getElementById("inputMensaje").addEventListener("keydown", e => {
+      if (e.key === "Enter") enviarMensaje();
+    });
+
+    // ── Parámetros URL (viene desde mascota.html) ──
+    async function comprobarParams() {
+      const params    = new URLSearchParams(window.location.search);
+      const conId     = parseInt(params.get("con"));
+      const mascotaId = params.get("mascota") ? parseInt(params.get("mascota")) : null;
+
+      if (conId) {
+        try {
+          const res  = await fetch(`/adopciones/php/obtenerNombreUsuario.php?id=${conId}`);
+          const data = await res.json();
+
+          let nombreMascota = null;
+          if (mascotaId) {
+            try {
+              const resMasc  = await fetch(`/adopciones/php/obtenerMascota.php?id=${mascotaId}`);
+              const dataMasc = await resMasc.json();
+              nombreMascota  = dataMasc.nombreMascota || null;
+            } catch { /* silencioso */ }
+          }
+
+          await abrirConversacion(
+            conId,
+            data.nombre || "Usuario",
+            mascotaId,
+            data.tieneFoto || false,
+            nombreMascota
+          );
+        } catch {
+          await abrirConversacion(conId, "Usuario", mascotaId, false, null);
+        }
+      }
+    }
+
+    // ── Inicio ──
+    inicializar().then(async () => {
+      await cargarConversaciones();
+      await comprobarParams();
+    });
+  </script>
+  <!-- FOOTER -->
+<footer class="footer-adopciones">
+  <div class="container">
+    <div class="row g-4 pb-3">
+
+      <!-- Marca -->
+      <div class="col-12 col-md-4">
+        <div class="footer-brand">
+          <img src="/adopciones/assets/logo.png" alt="Logo"
+               style="width:28px;height:28px;object-fit:contain;filter:brightness(10);" />
+          Adopta
+        </div>
+        <p class="footer-desc">
+          Conectamos animales que necesitan un hogar con personas dispuestas a dárselo.
+          Juntos hacemos un mundo mejor 🐾
+        </p>
+      </div>
+
+      <!-- Navegación -->
+      <div class="col-6 col-md-2">
+        <div class="footer-titulo">Navegación</div>
+        <a href="/adopciones/public/index.html">Inicio</a>
+        <a href="/adopciones/public/publicar.html" target="_blank">Publicar animal</a>
+        <a href="/adopciones/public/favoritos.html">Mis favoritos</a>
+        <a href="/adopciones/public/mensajes.html">Mensajes</a>
+      </div>
+
+      <!-- Mi cuenta -->
+      <div class="col-6 col-md-2">
+        <div class="footer-titulo">Mi cuenta</div>
+        <a href="/adopciones/public/perfil.html">Mi perfil</a>
+        <a href="/adopciones/public/publicaciones.html">Mis publicaciones</a>
+      </div>
+
+      <!-- Info -->
+      <div class="col-12 col-md-4">
+        <div class="footer-titulo">¿Encontraste un animal?</div>
+        <p class="footer-info-text">
+          Si has encontrado un animal perdido o abandonado, comprueba si lleva chip
+          consultando con un veterinario o la policía local antes de publicarlo.
+          Tu ayuda puede cambiar su vida. 💙
+        </p>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="footer-bottom">
+    © 2026 Adopta — Proyecto Integrado · Desarrollo de Aplicaciones Web
+  </div>
+</footer>
+</body>
+</html>

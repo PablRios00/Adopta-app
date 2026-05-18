@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Publicar mascota | Adopta</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="/adopciones/assets/estilos.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <style>
+    body { background-color:#f8f9fb; }
+    select:disabled { background-color: #e9ecef; cursor: not-allowed; }
+  </style>
+</head>
+
+<body>
+  <div class="container my-5">
+    <div class="card shadow p-4 mx-auto" style="max-width:700px;">
+      <h3 class="titulo-principal mb-4 text-center">📸 Publica una nueva mascota</h3>
+
+      <form id="formPublicar" enctype="multipart/form-data">
+        <!-- Nombre -->
+        <div class="mb-3">
+          <label class="form-label">Nombre del animal</label>
+          <input type="text" name="nombreMascota" class="form-control" required>
+        </div>
+
+        <!-- Especie / Sexo -->
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label">Especie</label>
+            <select name="especieMascota" class="form-select" required>
+              <option disabled selected value="">Selecciona una especie</option>
+              <option>Perro</option>
+              <option>Gato</option>
+              <option>Ave</option>
+              <option>Reptil</option>
+            </select>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Sexo</label>
+            <select name="sexoMascota" class="form-select" required>
+              <option disabled selected value="">Selecciona el sexo</option>
+              <option>Macho</option>
+              <option>Hembra</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Edad / Raza -->
+        <div class="row g-3 mt-1">
+          <div class="col-md-6">
+            <label class="form-label">Edad (años)</label>
+            <input type="number" min="0" name="edadMascota" class="form-control" required>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Raza</label>
+            <input type="text" name="razaMascota" class="form-control" required>
+          </div>
+        </div>
+
+        <!-- Descripción -->
+        <div class="mt-3 mb-3">
+          <label class="form-label">Descripción</label>
+          <textarea name="descripcionMascota" class="form-control" rows="4" required></textarea>
+        </div>
+
+        <!-- LUGAR: Comunidad → Provincia → Municipio -->
+        <div class="mb-1">
+          <label class="form-label">Lugar de publicación</label>
+        </div>
+
+        <div class="row g-3 mb-3">
+          <!-- Comunidad Autónoma -->
+          <div class="col-md-4">
+            <select id="selectComunidad" class="form-select" required>
+              <option disabled selected value="">Comunidad Autónoma</option>
+              <option>Andalucía</option>
+              <option>Aragón</option>
+              <option>Asturias</option>
+              <option>Baleares</option>
+              <option>Canarias</option>
+              <option>Cantabria</option>
+              <option>Castilla-La Mancha</option>
+              <option>Castilla y León</option>
+              <option>Cataluña</option>
+              <option>Ceuta</option>
+              <option>Comunidad de Madrid</option>
+              <option>Comunidad Foral de Navarra</option>
+              <option>Comunidad Valenciana</option>
+              <option>Extremadura</option>
+              <option>Galicia</option>
+              <option>La Rioja</option>
+              <option>Melilla</option>
+              <option>País Vasco</option>
+              <option>Región de Murcia</option>
+            </select>
+          </div>
+
+          <!-- Provincia -->
+          <div class="col-md-4">
+            <select id="selectProvincia" class="form-select" disabled required>
+              <option disabled selected value="">Provincia</option>
+            </select>
+          </div>
+
+          <!-- Municipio -->
+          <div class="col-md-4">
+            <select id="selectMunicipio" class="form-select" disabled required>
+              <option disabled selected value="">Municipio</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Campo oculto que se enviará al PHP -->
+        <input type="hidden" name="lugarMascota" id="lugarMascota">
+
+        <!-- Fotos -->
+        <div class="mb-3">
+          <label class="form-label">Fotos (mínimo 1, máximo 3)</label>
+          <input type="file" name="foto1" class="form-control mb-2" accept="image/*" required>
+          <input type="file" name="foto2" class="form-control mb-2" accept="image/*">
+          <input type="file" name="foto3" class="form-control mb-2" accept="image/*">
+        </div>
+
+        <!-- Estado -->
+        <div class="mb-3">
+          <label class="form-label">Estado</label>
+          <select name="estadoAdopcionMascota" class="form-select" required>
+            <option disabled selected value="">Selecciona</option>
+            <option>En adopción</option>
+            <option>Perdido</option>
+            <option>Abandonado</option>
+          </select>
+        </div>
+
+        <div id="mensaje" class="text-center text-danger my-3"></div>
+        <button type="submit" class="btn btn-principal w-100">Publicar</button>
+      </form>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+  <script>
+    // ============================================================
+    // DATOS: Comunidad → Provincias → Municipios
+    // ============================================================
+    const datos = {
+      "Andalucía": {
+        "Almería": ["Almería","Adra","Berja","El Ejido","Huércal-Overa","Níjar","Roquetas de Mar","Vera"],
+        "Cádiz": ["Cádiz","Algeciras","Chiclana de la Frontera","El Puerto de Santa María","Jerez de la Frontera","La Línea de la Concepción","Rota","San Fernando","Sanlúcar de Barrameda"],
+        "Córdoba": ["Córdoba","Baena","Cabra","Lucena","Montilla","Palma del Río","Peñarroya-Pueblonuevo","Pozoblanco","Puente Genil"],
+        "Granada": ["Granada","Almuñécar","Baza","Guadix","Loja","Maracena","Motril","Santa Fe"],
+        "Huelva": ["Huelva","Almonte","Ayamonte","Isla Cristina","Lepe","Moguer","Nerva","Punta Umbría"],
+        "Jaén": ["Jaén","Alcalá la Real","Andújar","Baeza","Linares","Martos","Úbeda","Villacarrillo"],
+        "Málaga": ["Málaga","Antequera","Benalmádena","Estepona","Fuengirola","Marbella","Mijas","Nerja","Ronda","Torremolinos","Vélez-Málaga"],
+        "Sevilla": ["Sevilla","Alcalá de Guadaíra","Carmona","Dos Hermanas","Écija","Lebrija","Morón de la Frontera","Osuna","Utrera","Umbrete","Camas","Tomares","Bormujos","Mairena del Aljarafe"]
+      },
+      "Aragón": {
+        "Huesca": ["Huesca","Barbastro","Jaca","Monzón","Sabiñánigo","Fraga"],
+        "Teruel": ["Teruel","Alcañiz","Andorra","Utrillas","Calamocha"],
+        "Zaragoza": ["Zaragoza","Calatayud","Ejea de los Caballeros","Tarazona","Utebo","Cuarte de Huerva"]
+      },
+      "Asturias": {
+        "Asturias": ["Oviedo","Gijón","Avilés","Mieres","Langreo","Siero","Castrillón","Corvera de Asturias"]
+      },
+      "Baleares": {
+        "Baleares": ["Palma","Ibiza","Manacor","Mahón","Calvià","Llucmajor","Marratxí","Sant Antoni de Portmany"]
+      },
+      "Canarias": {
+        "Las Palmas": ["Las Palmas de Gran Canaria","Arrecife","Puerto del Rosario","Telde","Santa Lucía de Tirajana","San Bartolomé de Tirajana"],
+        "Santa Cruz de Tenerife": ["Santa Cruz de Tenerife","San Cristóbal de La Laguna","Arona","Adeje","Puerto de la Cruz","La Orotava","Granadilla de Abona"]
+      },
+      "Cantabria": {
+        "Cantabria": ["Santander","Torrelavega","Camargo","Castro-Urdiales","Piélagos","El Astillero","Medio Cudeyo"]
+      },
+      "Castilla-La Mancha": {
+        "Albacete": ["Albacete","Hellín","Almansa","Villarrobledo","La Roda","Caudete"],
+        "Ciudad Real": ["Ciudad Real","Alcázar de San Juan","Puertollano","Tomelloso","Valdepeñas","Manzanares"],
+        "Cuenca": ["Cuenca","Tarancón","Motilla del Palancar","San Clemente"],
+        "Guadalajara": ["Guadalajara","Azuqueca de Henares","Cabanillas del Campo","Alovera"],
+        "Toledo": ["Toledo","Talavera de la Reina","Illescas","Consuegra","Ocaña","Seseña"]
+      },
+      "Castilla y León": {
+        "Ávila": ["Ávila","Arenas de San Pedro","El Barco de Ávila","Arévalo"],
+        "Burgos": ["Burgos","Miranda de Ebro","Aranda de Duero","Medina de Pomar"],
+        "León": ["León","Ponferrada","San Andrés del Rabanedo","Astorga","La Bañeza"],
+        "Palencia": ["Palencia","Aguilar de Campoo","Guardo","Venta de Baños"],
+        "Salamanca": ["Salamanca","Béjar","Ciudad Rodrigo","Santa Marta de Tormes"],
+        "Segovia": ["Segovia","Cuéllar","El Espinar","San Ildefonso"],
+        "Soria": ["Soria","Almazán","El Burgo de Osma","Ágreda"],
+        "Valladolid": ["Valladolid","Medina del Campo","Laguna de Duero","Arroyo de la Encomienda"],
+        "Zamora": ["Zamora","Benavente","Toro","Puebla de Sanabria"]
+      },
+      "Cataluña": {
+        "Barcelona": ["Barcelona","Hospitalet de Llobregat","Badalona","Terrassa","Sabadell","Mataró","Santa Coloma de Gramenet","Cornellà de Llobregat","Sant Boi de Llobregat","Rubí"],
+        "Girona": ["Girona","Blanes","Lloret de Mar","Figueres","Olot","Salt"],
+        "Lleida": ["Lleida","Balaguer","Cervera","Mollerussa","Tàrrega"],
+        "Tarragona": ["Tarragona","Reus","Tortosa","El Vendrell","Cambrils","Salou"]
+      },
+      "Ceuta": {
+        "Ceuta": ["Ceuta"]
+      },
+      "Comunidad de Madrid": {
+        "Madrid": ["Madrid","Móstoles","Alcalá de Henares","Fuenlabrada","Leganés","Getafe","Alcorcón","Torrejón de Ardoz","Parla","Alcobendas","Las Rozas","Pozuelo de Alarcón","Majadahonda","Rivas-Vaciamadrid","Collado Villalba"]
+      },
+      "Comunidad Foral de Navarra": {
+        "Navarra": ["Pamplona","Tudela","Barañáin","Burlada","Estella","Sarriguren","Zizur Mayor"]
+      },
+      "Comunidad Valenciana": {
+        "Alicante": ["Alicante","Benidorm","Elche","Torrevieja","Orihuela","Villena","Alcoy","Petrer","San Vicente del Raspeig"],
+        "Castellón": ["Castellón de la Plana","Benicàssim","Burriana","Vinaròs","Vila-real","Peñíscola"],
+        "Valencia": ["Valencia","Torrent","Gandia","Paterna","Sagunto","Alzira","Mislata","Burjassot","Xirivella"]
+      },
+      "Extremadura": {
+        "Badajoz": ["Badajoz","Mérida","Don Benito","Almendralejo","Villanueva de la Serena","Zafra"],
+        "Cáceres": ["Cáceres","Plasencia","Navalmoral de la Mata","Miajadas","Trujillo"]
+      },
+      "Galicia": {
+        "A Coruña": ["A Coruña","Santiago de Compostela","Ferrol","Lugo","Ourense","Pontevedra","Vigo"],
+        "Lugo": ["Lugo","Monforte de Lemos","Vilalba","Sarria","Chantada"],
+        "Ourense": ["Ourense","Verín","O Barco de Valdeorras","Xinzo de Limia"],
+        "Pontevedra": ["Vigo","Pontevedra","Vilagarcía de Arousa","Redondela","Cangas","Marín","A Estrada"]
+      },
+      "La Rioja": {
+        "La Rioja": ["Logroño","Calahorra","Arnedo","Haro","Nájera","Alfaro"]
+      },
+      "Melilla": {
+        "Melilla": ["Melilla"]
+      },
+      "País Vasco": {
+        "Álava": ["Vitoria-Gasteiz","Amurrio","Llodio","Salvatierra"],
+        "Gipuzkoa": ["San Sebastián","Irun","Errenteria","Zarautz","Eibar","Arrasate"],
+        "Bizkaia": ["Bilbao","Barakaldo","Getxo","Basauri","Leioa","Santurtzi","Portugalete"]
+      },
+      "Región de Murcia": {
+        "Murcia": ["Murcia","Cartagena","Lorca","Molina de Segura","Alcantarilla","Mazarrón","San Javier","Torre-Pacheco","Yecla"]
+      }
+    };
+
+    // ============================================================
+    // LÓGICA DE LOS DESPLEGABLES
+    // ============================================================
+    const selComunidad = document.getElementById("selectComunidad");
+    const selProvincia = document.getElementById("selectProvincia");
+    const selMunicipio = document.getElementById("selectMunicipio");
+    const inputLugar   = document.getElementById("lugarMascota");
+
+    selComunidad.addEventListener("change", () => {
+      const comunidad = selComunidad.value;
+
+      // Reset provincia
+      selProvincia.innerHTML = '<option disabled selected value="">Provincia</option>';
+      selProvincia.disabled = false;
+
+      // Reset municipio
+      selMunicipio.innerHTML = '<option disabled selected value="">Municipio</option>';
+      selMunicipio.disabled = true;
+
+      inputLugar.value = "";
+
+      const provincias = Object.keys(datos[comunidad] || {});
+      provincias.forEach(p => {
+        const opt = document.createElement("option");
+        opt.value = p;
+        opt.textContent = p;
+        selProvincia.appendChild(opt);
+      });
+    });
+
+    selProvincia.addEventListener("change", () => {
+      const comunidad = selComunidad.value;
+      const provincia = selProvincia.value;
+
+      // Reset municipio
+      selMunicipio.innerHTML = '<option disabled selected value="">Municipio</option>';
+      selMunicipio.disabled = false;
+
+      inputLugar.value = "";
+
+      const municipios = datos[comunidad]?.[provincia] || [];
+      municipios.forEach(m => {
+        const opt = document.createElement("option");
+        opt.value = m;
+        opt.textContent = m;
+        selMunicipio.appendChild(opt);
+      });
+    });
+
+    selMunicipio.addEventListener("change", () => {
+      const comunidad = selComunidad.value;
+      const provincia = selProvincia.value;
+      const municipio = selMunicipio.value;
+      // Guardar en campo oculto: "Comunidad, Provincia, Municipio"
+      inputLugar.value = `${comunidad}, ${provincia}, ${municipio}`;
+    });
+
+    // ============================================================
+    // ENVÍO DEL FORMULARIO
+    // ============================================================
+    document.getElementById("formPublicar").addEventListener("submit", async e => {
+      e.preventDefault();
+      const msg = document.getElementById("mensaje");
+
+      // Validar que se haya seleccionado lugar completo
+      if (!inputLugar.value) {
+        msg.classList.add("text-danger");
+        msg.textContent = "Por favor selecciona Comunidad, Provincia y Municipio.";
+        return;
+      }
+
+      const datos = new FormData(e.target);
+
+      try {
+        const res = await fetch("/adopciones/php/publicar.php", { method: "POST", body: datos });
+        const texto = await res.text();
+        if (texto.trim() === "success") {
+          msg.classList.remove("text-danger");
+          msg.classList.add("text-success");
+          msg.textContent = "🐾 Publicación creada correctamente.";
+          e.target.reset();
+          selProvincia.innerHTML = '<option disabled selected value="">Provincia</option>';
+          selProvincia.disabled = true;
+          selMunicipio.innerHTML = '<option disabled selected value="">Municipio</option>';
+          selMunicipio.disabled = true;
+          inputLugar.value = "";
+        } else {
+          msg.classList.remove("text-success");
+          msg.classList.add("text-danger");
+          msg.textContent = texto;
+        }
+      } catch {
+        msg.textContent = "Error al conectar con el servidor.";
+      }
+    });
+  </script>
+<!-- FOOTER -->
+<footer class="footer-adopciones">
+  <div class="container">
+    <div class="row g-4 pb-3">
+
+      <!-- Marca -->
+      <div class="col-12 col-md-4">
+        <div class="footer-brand">
+          <img src="/adopciones/assets/logo.png" alt="Logo"
+               style="width:28px;height:28px;object-fit:contain;filter:brightness(10);" />
+          Adopta
+        </div>
+        <p class="footer-desc">
+          Conectamos animales que necesitan un hogar con personas dispuestas a dárselo.
+          Juntos hacemos un mundo mejor 🐾
+        </p>
+      </div>
+
+      <!-- Navegación -->
+      <div class="col-6 col-md-2">
+        <div class="footer-titulo">Navegación</div>
+        <a href="/adopciones/public/index.html">Inicio</a>
+        <a href="/adopciones/public/publicar.html" target="_blank">Publicar animal</a>
+        <a href="/adopciones/public/favoritos.html">Mis favoritos</a>
+        <a href="/adopciones/public/mensajes.html">Mensajes</a>
+      </div>
+
+      <!-- Mi cuenta -->
+      <div class="col-6 col-md-2">
+        <div class="footer-titulo">Mi cuenta</div>
+        <a href="/adopciones/public/perfil.html">Mi perfil</a>
+        <a href="/adopciones/public/publicaciones.html">Mis publicaciones</a>
+      </div>
+
+      <!-- Info -->
+      <div class="col-12 col-md-4">
+        <div class="footer-titulo">¿Encontraste un animal?</div>
+        <p class="footer-info-text">
+          Si has encontrado un animal perdido o abandonado, comprueba si lleva chip
+          consultando con un veterinario o la policía local antes de publicarlo.
+          Tu ayuda puede cambiar su vida. 💙
+        </p>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="footer-bottom">
+    © 2026 Adopta — Proyecto Integrado · Desarrollo de Aplicaciones Web
+  </div>
+</footer>
+</body>
+</html>
