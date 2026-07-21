@@ -6,7 +6,7 @@
   <title>Mensajes | Adopta</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet" />
-  <link rel="stylesheet" href="/adopciones/assets/estilos.css" />
+  <link rel="stylesheet" href="assets/estilos.css" />
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet" />
   <style>
     .chat-lista-header {
@@ -44,7 +44,7 @@
 <body>
   <nav class="navbar-adopciones">
     <a class="navbar-brand" href="index.html">
-      <img src="/adopciones/assets/logo.png" alt="Logo" />
+      <img src="assets/logo.png" alt="Logo" />
       <span>Adopta</span>
     </a>
     <div class="nav-icons">
@@ -99,7 +99,7 @@
     // ── Sesión ──
     async function inicializar() {
       try {
-        const res  = await fetch("/adopciones/php/index.php");
+        const res  = await fetch("php/index.php");
         if (!res.ok) throw new Error();
         const data = await res.json();
         document.getElementById("nombreUsuarioNav").textContent = data.usuario;
@@ -112,7 +112,7 @@
     // ── Lista de conversaciones ──
     async function cargarConversaciones() {
       try {
-        const res   = await fetch("/adopciones/php/misMensajes.php");
+        const res   = await fetch("php/misMensajes.php");
         const lista = await res.json();
         const cont  = document.getElementById("listaConv");
         cont.innerHTML = "";
@@ -127,7 +127,7 @@
 
         lista.forEach(conv => {
           const avatarHtml = conv.tieneFoto
-            ? `<img src="/adopciones/php/verFotoPerfil.php?id=${conv.otroId}"
+            ? `<img src="php/verFotoPerfil.php?id=${conv.otroId}"
                     alt="${conv.otroUsuario}" />`
             : `<i class="bi bi-person-fill"></i>`;
 
@@ -178,7 +178,7 @@
       mascotaActiva  = idMascota || null;
 
       const avatarHtml = tieneFoto
-        ? `<img src="/adopciones/php/verFotoPerfil.php?id=${idContacto}" alt="${nombre}" />`
+        ? `<img src="php/verFotoPerfil.php?id=${idContacto}" alt="${nombre}" />`
         : `<i class="bi bi-person-circle" style="color:var(--color-principal);font-size:1.6rem;"></i>`;
 
       const subtitulo = nombreMascota
@@ -214,7 +214,7 @@
     async function cargarMensajes() {
       if (!contactoActivo) return;
       try {
-        let url = `/adopciones/php/obtenerConversacion.php?con=${contactoActivo}`;
+        let url = `php/obtenerConversacion.php?con=${contactoActivo}`;
         if (mascotaActiva !== null && mascotaActiva !== undefined) {
           url += `&mascota=${mascotaActiva}`;
         }
@@ -264,7 +264,7 @@
       input.value = "";
 
       try {
-        const res = await fetch("/adopciones/php/enviarMensaje.php", {
+        const res = await fetch("php/enviarMensaje.php", {
           method: "POST",
           body: datos
         });
@@ -292,13 +292,13 @@
 
       if (conId) {
         try {
-          const res  = await fetch(`/adopciones/php/obtenerNombreUsuario.php?id=${conId}`);
+          const res  = await fetch(`php/obtenerNombreUsuario.php?id=${conId}`);
           const data = await res.json();
 
           let nombreMascota = null;
           if (mascotaId) {
             try {
-              const resMasc  = await fetch(`/adopciones/php/obtenerMascota.php?id=${mascotaId}`);
+              const resMasc  = await fetch(`php/obtenerMascota.php?id=${mascotaId}`);
               const dataMasc = await resMasc.json();
               nombreMascota  = dataMasc.nombreMascota || null;
             } catch { /* silencioso */ }
@@ -331,7 +331,7 @@
       <!-- Marca -->
       <div class="col-12 col-md-4">
         <div class="footer-brand">
-          <img src="/adopciones/assets/logo.png" alt="Logo"
+          <img src="assets/logo.png" alt="Logo"
                style="width:28px;height:28px;object-fit:contain;filter:brightness(10);" />
           Adopta
         </div>
@@ -344,17 +344,17 @@
       <!-- Navegación -->
       <div class="col-6 col-md-2">
         <div class="footer-titulo">Navegación</div>
-        <a href="/adopciones/public/index.html">Inicio</a>
-        <a href="/adopciones/public/publicar.html" target="_blank">Publicar animal</a>
-        <a href="/adopciones/public/favoritos.html">Mis favoritos</a>
-        <a href="/adopciones/public/mensajes.html">Mensajes</a>
+        <a href="index.html">Inicio</a>
+        <a href="publicar.html" target="_blank">Publicar animal</a>
+        <a href="favoritos.html">Mis favoritos</a>
+        <a href="mensajes.html">Mensajes</a>
       </div>
 
       <!-- Mi cuenta -->
       <div class="col-6 col-md-2">
         <div class="footer-titulo">Mi cuenta</div>
-        <a href="/adopciones/public/perfil.html">Mi perfil</a>
-        <a href="/adopciones/public/publicaciones.html">Mis publicaciones</a>
+        <a href="perfil.html">Mi perfil</a>
+        <a href="publicaciones.html">Mis publicaciones</a>
       </div>
 
       <!-- Info -->

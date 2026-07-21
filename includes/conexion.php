@@ -1,13 +1,16 @@
 <?php
-$servername = "localhost";
-$username = "pablo";
-$password = "1234";
-$database = "adopcionesDB";
+require_once __DIR__ . '/config.php';
 
 try {
-    $conn = new PDO("mysql:host=$servername;dbname=$database;charset=utf8mb4", $username, $password);
+    $conn = new PDO(
+        "mysql:host=" . DB_HOST . ";dbname=" . DB_NAME . ";charset=utf8mb4",
+        DB_USER,
+        DB_PASSWORD
+    );
     $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 } catch(PDOException $e) {
-    die("Fallo en la conexión: " . $e->getMessage());
+    // En producción nunca mostrar el error real
+    error_log("Fallo en la conexión: " . $e->getMessage());
+    die(json_encode(["error" => "Error de conexión con la base de datos."]));
 }
 ?>

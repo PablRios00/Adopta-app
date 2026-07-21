@@ -3,125 +3,247 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Registro | Adopciones</title>
-
-  <!-- Bootstrap y CSS principal -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link href="../assets/estilos.css" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+  <title>Crear cuenta | Adopta</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/estilos.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    .ubicacion-registro-wrapper { position: relative; }
+    .sugerencias-registro {
+      position: absolute;
+      top: 100%; left: 0; right: 0;
+      background: #fff;
+      border: 1px solid #d0e4f5;
+      border-top: none;
+      border-radius: 0 0 10px 10px;
+      max-height: 200px;
+      overflow-y: auto;
+      z-index: 500;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      display: none;
+    }
+    .sugerencia-reg-item {
+      padding: 0.6rem 0.9rem;
+      cursor: pointer;
+      font-size: 0.86rem;
+      border-bottom: 1px solid #f0f4f8;
+    }
+    .sugerencia-reg-item:hover { background: #eef5fc; }
+  </style>
 </head>
-
 <body>
-  <section class="section-central">
-    <div class="card-form">
-      <h3 class="titulo-principal text-center mb-3">Crear cuenta</h3>
-      <p class="text-muted text-center mb-4">
+  <div class="section-central" style="min-height:100vh;padding:2rem 0;">
+    <div class="card-form" style="max-width:420px;">
+      <h3 class="titulo-principal text-center mb-1">Crear cuenta</h3>
+      <p class="text-center text-muted mb-4" style="font-size:0.88rem;">
         Únete a nuestra comunidad de adopciones 🐶💙
       </p>
 
-      <form id="formRegistro" novalidate>
-        <div class="mb-3">
-          <label for="usuario" class="form-label">Nombre de usuario</label>
-          <input type="text" id="usuario" name="usuario" class="form-control" required>
-        </div>
+      <div id="msgRegistro" class="text-danger text-center mb-3"
+           style="min-height:1.2em;font-size:0.88rem;"></div>
 
-        <div class="mb-3">
-          <label for="correo" class="form-label">Correo electrónico</label>
-          <input type="email" id="correo" name="correo" class="form-control" required>
-        </div>
+      <div class="mb-3">
+        <label class="form-label">Nombre de usuario</label>
+        <input type="text" id="nombreUsuario" class="form-control" required>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Correo electrónico</label>
+        <input type="email" id="emailUsuario" class="form-control" required>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Confirma tu correo</label>
+        <input type="email" id="emailUsuario2" class="form-control" required>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Contraseña</label>
+        <input type="password" id="contrasenaUsuario" class="form-control" required>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Confirma tu contraseña</label>
+        <input type="password" id="contrasena2" class="form-control" required>
+      </div>
 
-        <div class="mb-3">
-          <label for="correoConfirma" class="form-label">Confirma tu correo</label>
-          <input type="email" id="correoConfirma" class="form-control" required>
+      <!-- UBICACIÓN OBLIGATORIA -->
+      <div class="mb-3">
+        <label class="form-label">
+          Tu ubicación
+          <small class="d-block text-muted" style="font-size:0.78rem;margin-top:2px;">
+            <i class="bi bi-info-circle"></i>
+            Usamos tu municipio para recomendarte animales cerca de ti.
+            Necesitamos Municipio, Provincia y Comunidad Autónoma.
+          </small>
+        </label>
+        <div class="ubicacion-registro-wrapper">
+          <input type="text" id="buscadorUbicacionReg" class="form-control"
+                 placeholder="Escribe tu municipio..." autocomplete="off" required>
+          <div class="sugerencias-registro" id="sugerenciasRegistro"></div>
         </div>
-
-        <div class="mb-3">
-          <label for="contrasena" class="form-label">Contraseña</label>
-          <input type="password" id="contrasena" name="contrasena" class="form-control" required>
+        <div id="ubicacionRegConfirmada" class="mt-2 d-none"
+             style="background:#eef5fc;border-radius:8px;padding:0.5rem 0.8rem;
+                    font-size:0.83rem;color:var(--color-principal-oscuro);">
+          <i class="bi bi-geo-alt-fill text-danger"></i>
+          <span id="textoUbicacionReg"></span>
         </div>
+        <div id="errorUbicacionReg" class="text-danger mt-1 d-none"
+             style="font-size:0.82rem;"></div>
+      </div>
+      <input type="hidden" id="lugarUsuario">
+      <input type="hidden" id="municipioUsuario">
+      <input type="hidden" id="provinciaUsuario">
+      <input type="hidden" id="comunidadUsuario">
+      <input type="hidden" id="latitudUsuario">
+      <input type="hidden" id="longitudUsuario">
 
-        <div class="mb-3">
-          <label for="contrasenaConfirma" class="form-label">Confirma tu contraseña</label>
-          <input type="password" id="contrasenaConfirma" class="form-control" required>
+      <!-- ACEPTACIÓN LEGAL -->
+      <div class="mb-3">
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" id="checkTerminos">
+          <label class="form-check-label" for="checkTerminos" style="font-size:0.83rem;">
+            He leído y acepto los
+            <a href="terminos.html" target="_blank"
+               style="color:var(--color-principal-oscuro);">Términos y Condiciones</a>
+            y la
+            <a href="privacidad.html" target="_blank"
+               style="color:var(--color-principal-oscuro);">Política de Privacidad</a>
+            de Adopta.
+          </label>
         </div>
-
-        <div class="mb-3">
-          <label for="telefono" class="form-label">Teléfono</label>
-          <input type="text" id="telefono" name="telefono" class="form-control" required>
+        <div class="form-check mt-2">
+          <input class="form-check-input" type="checkbox" id="checkMayor">
+          <label class="form-check-label" for="checkMayor" style="font-size:0.83rem;">
+            Confirmo que tengo 14 años o más, o que cuento con el consentimiento
+            de mi tutor legal.
+          </label>
         </div>
+      </div>
 
-        <div class="mb-3">
-          <label for="direccion" class="form-label">Dirección</label>
-          <input type="text" id="direccion" name="direccion" class="form-control" required>
-        </div>
+      <button class="btn btn-principal w-100 mt-2" id="btnRegistrar">Registrarse</button>
 
-        <button type="submit" class="btn btn-principal w-100">Registrarse</button>
-        <div id="mensaje" class="text-danger text-center mt-3" style="min-height:1.5em;"></div>
-
-        <div class="text-center mt-3">
-          <small class="text-muted">¿Ya tienes cuenta?</small><br>
-          <a href="login.html" class="btn btn-outline-principal w-100 mt-2">Inicia sesión</a>
-        </div>
-      </form>
+      <div class="text-center mt-3" style="font-size:0.88rem;">
+        ¿Ya tienes cuenta?
+        <a href="login.html" class="fw-semibold"
+           style="color:var(--color-principal-oscuro);">Inicia sesión</a>
+      </div>
     </div>
-  </section>
+  </div>
 
+  <script src="assets/ubicacion-common.js"></script>
   <script>
-    const form = document.getElementById("formRegistro");
-    const msg = document.getElementById("mensaje");
+    let ubicacionRegistroValida = false;
+    let timeoutReg = null;
 
-    form.addEventListener("submit", async function (e) {
-      e.preventDefault();
-      msg.textContent = ""; // limpia mensaje previo
+    const inputReg = document.getElementById('buscadorUbicacionReg');
+    const sugerReg = document.getElementById('sugerenciasRegistro');
 
-      // Tomamos valores
-      const usuario = document.getElementById("usuario").value.trim();
-      const correo = document.getElementById("correo").value.trim();
-      const correoConf = document.getElementById("correoConfirma").value.trim();
-      const pass = document.getElementById("contrasena").value.trim();
-      const passConf = document.getElementById("contrasenaConfirma").value.trim();
-      const tel = document.getElementById("telefono").value.trim();
-      const dir = document.getElementById("direccion").value.trim();
+    inputReg.addEventListener('input', () => {
+      ubicacionRegistroValida = false;
+      document.getElementById('ubicacionRegConfirmada').classList.add('d-none');
+      document.getElementById('errorUbicacionReg').classList.add('d-none');
+      document.getElementById('lugarUsuario').value     = '';
+      document.getElementById('municipioUsuario').value = '';
+      document.getElementById('provinciaUsuario').value = '';
+      document.getElementById('comunidadUsuario').value = '';
+      document.getElementById('latitudUsuario').value   = '';
+      document.getElementById('longitudUsuario').value  = '';
 
-      // 🔎 Validaciones básicas
-      if (!usuario || !correo || !correoConf || !pass || !passConf || !tel || !dir) {
-        msg.textContent = "Por favor, completa todos los campos.";
-        return;
-      }
+      const texto = inputReg.value.trim();
+      clearTimeout(timeoutReg);
+      if (texto.length < 2) { sugerReg.style.display = 'none'; return; }
 
-      if (correo !== correoConf) {
-        msg.textContent = "Los correos electrónicos no coinciden.";
-        return;
-      }
+      timeoutReg = setTimeout(async () => {
+        const resultados = await buscarUbicaciones(texto);
+        sugerReg.innerHTML = '';
+        if (!resultados.length) { sugerReg.style.display = 'none'; return; }
 
-      if (pass !== passConf) {
-        msg.textContent = "Las contraseñas no coinciden.";
-        return;
-      }
-
-      // Si pasa todas las validaciones
-      const datos = new FormData(form);
-      try {
-        const res = await fetch("../php/registro.php", {
-          method: "POST",
-          body: datos,
+        resultados.forEach(lugar => {
+          const ubic = extraerUbicacionDesdeNominatim(lugar);
+          if (!ubic.municipio || !ubic.provincia || !ubic.comunidad) return;
+          const div = document.createElement('div');
+          div.className   = 'sugerencia-reg-item';
+          div.textContent = ubic.texto;
+          div.addEventListener('click', () => seleccionarUbicacionReg(lugar));
+          sugerReg.appendChild(div);
         });
-        const texto = await res.text();
 
-        if (texto.trim() === "success") {
-          msg.classList.remove("text-danger");
-          msg.classList.add("text-success");
-          msg.textContent = "Registro exitoso. Redirigiendo...";
-          setTimeout(() => (window.location.href = "login.html"), 1500);
+        sugerReg.style.display = sugerReg.children.length ? 'block' : 'none';
+      }, 400);
+    });
+
+    document.addEventListener('click', e => {
+      if (!e.target.closest('.ubicacion-registro-wrapper')) {
+        sugerReg.style.display = 'none';
+      }
+    });
+
+    function seleccionarUbicacionReg(lugar) {
+      const ubic = extraerUbicacionDesdeNominatim(lugar);
+
+      if (!ubic.municipio || !ubic.provincia || !ubic.comunidad) {
+        const err = document.getElementById('errorUbicacionReg');
+        err.textContent = 'Por favor selecciona un municipio más específico que incluya Municipio, Provincia y Comunidad Autónoma.';
+        err.classList.remove('d-none');
+        ubicacionRegistroValida = false;
+        return;
+      }
+
+      document.getElementById('lugarUsuario').value     = ubic.texto;
+      document.getElementById('municipioUsuario').value = ubic.municipio;
+      document.getElementById('provinciaUsuario').value = ubic.provincia;
+      document.getElementById('comunidadUsuario').value = ubic.comunidad;
+      document.getElementById('latitudUsuario').value   = ubic.lat;
+      document.getElementById('longitudUsuario').value  = ubic.lon;
+
+      inputReg.value = ubic.texto;
+      sugerReg.style.display = 'none';
+
+      const conf = document.getElementById('ubicacionRegConfirmada');
+      document.getElementById('textoUbicacionReg').textContent = ubic.texto;
+      conf.classList.remove('d-none');
+      document.getElementById('errorUbicacionReg').classList.add('d-none');
+      ubicacionRegistroValida = true;
+    }
+
+    document.getElementById('btnRegistrar').addEventListener('click', async () => {
+      const msg = document.getElementById('msgRegistro');
+      msg.textContent = '';
+
+      if (!document.getElementById('checkTerminos').checked) {
+        msg.textContent = 'Debes aceptar los Términos y Condiciones y la Política de Privacidad para registrarte.';
+        return;
+      }
+      if (!document.getElementById('checkMayor').checked) {
+        msg.textContent = 'Debes confirmar que tienes 14 años o más para registrarte.';
+        return;
+      }
+      if (!ubicacionRegistroValida) {
+        msg.textContent = 'Por favor selecciona tu municipio, provincia y comunidad autónoma en el buscador de ubicación.';
+        return;
+      }
+
+      const datos = new FormData();
+      datos.append('nombreUsuario',     document.getElementById('nombreUsuario').value.trim());
+      datos.append('emailUsuario',      document.getElementById('emailUsuario').value.trim());
+      datos.append('emailUsuario2',     document.getElementById('emailUsuario2').value.trim());
+      datos.append('contrasenaUsuario', document.getElementById('contrasenaUsuario').value);
+      datos.append('contrasena2',       document.getElementById('contrasena2').value);
+      datos.append('lugarUsuario',      document.getElementById('lugarUsuario').value);
+      datos.append('municipioUsuario',  document.getElementById('municipioUsuario').value);
+      datos.append('provinciaUsuario',  document.getElementById('provinciaUsuario').value);
+      datos.append('comunidadUsuario',  document.getElementById('comunidadUsuario').value);
+      datos.append('latitudUsuario',    document.getElementById('latitudUsuario').value);
+      datos.append('longitudUsuario',   document.getElementById('longitudUsuario').value);
+
+      try {
+        const res  = await fetch('php/registro.php', { method: 'POST', body: datos });
+        const data = await res.json();
+        if (data.ok) {
+          window.location.href = 'login.html';
         } else {
-          msg.classList.remove("text-success");
-          msg.classList.add("text-danger");
-          msg.textContent = texto || "Ha ocurrido un error.";
+          msg.textContent = data.error || 'Error al registrar.';
         }
-      } catch (err) {
-        msg.classList.remove("text-success");
-        msg.classList.add("text-danger");
-        msg.textContent = "No se pudo conectar con el servidor.";
+      } catch {
+        msg.textContent = 'Error al conectar con el servidor.';
       }
     });
   </script>

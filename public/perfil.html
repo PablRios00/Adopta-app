@@ -6,14 +6,37 @@
   <title>Mi perfil | Adopta</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet" />
-  <link rel="stylesheet" href="/adopciones/assets/estilos.css" />
-  <link rel="stylesheet" href="/adopciones/assets/perfil-layout.css" />
+  <link rel="stylesheet" href="assets/estilos.css" />
+  <link rel="stylesheet" href="assets/perfil-layout.css" />
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    .ubicacion-perfil-wrapper { position: relative; }
+    .sugerencias-perfil {
+      position: absolute;
+      top: 100%; left: 0; right: 0;
+      background: #fff;
+      border: 1px solid #d0e4f5;
+      border-top: none;
+      border-radius: 0 0 10px 10px;
+      max-height: 200px;
+      overflow-y: auto;
+      z-index: 500;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      display: none;
+    }
+    .sugerencia-perfil-item {
+      padding: 0.6rem 0.9rem;
+      cursor: pointer;
+      font-size: 0.86rem;
+      border-bottom: 1px solid #f0f4f8;
+    }
+    .sugerencia-perfil-item:hover { background: #eef5fc; }
+  </style>
 </head>
 <body>
   <nav class="navbar-adopciones">
     <a class="navbar-brand" href="index.html">
-      <img src="/adopciones/assets/logo.png" alt="Logo" />
+      <img src="assets/logo.png" alt="Logo" />
       <span>Adopta</span>
     </a>
     <div class="nav-icons">
@@ -28,12 +51,15 @@
 
   <div class="perfil-wrapper">
     <aside class="perfil-sidebar">
-      <img id="avatarSidebar" src="/adopciones/assets/avatar-default.png" alt="Avatar" class="sidebar-avatar" />
+      <img id="avatarSidebar"
+           src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='50' fill='%23a7c7e7'/%3E%3Ccircle cx='50' cy='38' r='18' fill='%23fff'/%3E%3Cellipse cx='50' cy='82' rx='28' ry='20' fill='%23fff'/%3E%3C/svg%3E"
+           alt="Avatar" class="sidebar-avatar" />
       <p class="sidebar-nombre" id="sidebarNombre">Cargando...</p>
       <a href="perfil.html"        class="sidebar-btn activo"><i class="bi bi-person-circle"></i> Perfil</a>
       <a href="publicaciones.html" class="sidebar-btn"><i class="bi bi-card-image"></i> Tus publicaciones</a>
       <a href="favoritos.html"     class="sidebar-btn"><i class="bi bi-heart-fill"></i> Mis favoritos</a>
       <a href="mensajes.html"      class="sidebar-btn"><i class="bi bi-chat-dots-fill"></i> Bandeja de mensajes</a>
+      <a href="alertas.html"       class="sidebar-btn"><i class="bi bi-bell-fill"></i> Mis alertas</a>
       <div class="sidebar-divider"></div>
       <button class="sidebar-btn btn-cerrar-sesion" id="btnCerrarSesion">
         <i class="bi bi-box-arrow-right"></i> Cerrar sesión
@@ -42,114 +68,336 @@
 
     <main class="perfil-contenido">
       <h4 class="panel-titulo"><i class="bi bi-person-circle me-2"></i>Mi perfil</h4>
-      <div class="row g-4">
-        <div class="col-md-4 text-center">
-          <img id="avatarPerfil" src="/adopciones/assets/avatar-default.png"
-               class="rounded-circle border mb-3"
-               style="width:120px;height:120px;object-fit:cover;border-color:var(--color-principal)!important" />
-          <div>
-            <label for="inputFotoPerfil" class="btn btn-sm btn-outline-secondary" style="cursor:pointer;">
-              <i class="bi bi-camera"></i> Cambiar foto
+
+      <div class="row g-4 align-items-start">
+        <div class="col-auto text-center">
+          <img id="fotoPerfilPreview"
+               src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='50' fill='%23a7c7e7'/%3E%3Ccircle cx='50' cy='38' r='18' fill='%23fff'/%3E%3Cellipse cx='50' cy='82' rx='28' ry='20' fill='%23fff'/%3E%3C/svg%3E"
+               alt="Foto de perfil"
+               style="width:100px;height:100px;border-radius:50%;object-fit:cover;
+                      border:3px solid var(--color-principal);" />
+          <div class="mt-2">
+            <label for="inputFotoPerfil" class="btn btn-sm btn-outline-secondary"
+                   style="font-size:0.78rem;cursor:pointer;">
+              <i class="bi bi-camera-fill me-1"></i> Cambiar foto
             </label>
-            <input type="file" id="inputFotoPerfil" name="fotoPerfil"
-                   accept="image/*" class="d-none"
-                   onchange="previewFoto(this)" />
+            <input type="file" id="inputFotoPerfil" accept="image/*" class="d-none">
           </div>
         </div>
-        <div class="col-md-8">
-          <form id="formEditarPerfil" enctype="multipart/form-data">
-            <div class="mb-3">
-              <label class="form-label">Nombre de usuario</label>
-              <input type="text" id="editNombre" name="nombreUsuario" class="form-control" />
+
+        <div class="col">
+          <div class="mb-3">
+            <label class="form-label form-edit-label">Nombre de usuario</label>
+            <input type="text" id="editNombre" class="form-control">
+          </div>
+          <div class="mb-3">
+            <label class="form-label form-edit-label">Correo electrónico</label>
+            <input type="email" id="editEmail" class="form-control">
+          </div>
+          <div class="mb-3">
+            <label class="form-label form-edit-label">
+              Nueva contraseña
+              <small class="text-muted">(dejar en blanco para no cambiar)</small>
+            </label>
+            <input type="password" id="editPass" class="form-control">
+          </div>
+
+          <!-- UBICACIÓN -->
+          <div class="mb-3">
+            <label class="form-label form-edit-label">
+              Tu ubicación
+              <small class="d-block text-muted" style="font-size:0.78rem;">
+                <i class="bi bi-info-circle"></i>
+                Busca tu municipio para actualizar las recomendaciones de cercanía.
+                Se requiere Municipio, Provincia y Comunidad Autónoma.
+              </small>
+            </label>
+            <div id="ubicacionActual" class="mb-2 d-none"
+                 style="background:#f0f7ff;border-radius:8px;padding:0.5rem 0.9rem;
+                        font-size:0.83rem;color:var(--color-principal-oscuro);
+                        border:1px solid #d0e4f5;">
+              <i class="bi bi-geo-alt-fill text-danger me-1"></i>
+              Ubicación actual: <strong id="textoUbicacionActual"></strong>
             </div>
-            <div class="mb-3">
-              <label class="form-label">Correo electrónico</label>
-              <input type="email" id="editEmail" name="emailUsuario" class="form-control" />
+            <div class="ubicacion-perfil-wrapper">
+              <input type="text" id="buscadorUbicacionPerfil" class="form-control"
+                     placeholder="Busca tu municipio para cambiarlo..." autocomplete="off">
+              <div class="sugerencias-perfil" id="sugerenciasPerfil"></div>
             </div>
-            <div class="mb-3">
-              <label class="form-label">Teléfono</label>
-              <input type="text" id="editTelefono" name="telefonoUsuario" class="form-control" />
+            <div id="ubicacionPerfilConfirmada" class="mt-2 d-none"
+                 style="background:#eef5fc;border-radius:8px;padding:0.5rem 0.8rem;
+                        font-size:0.83rem;color:var(--color-principal-oscuro);">
+              <i class="bi bi-check-circle-fill text-success me-1"></i>
+              Nueva ubicación: <span id="textoUbicacionPerfil"></span>
             </div>
-            <div class="mb-3">
-              <label class="form-label">Dirección</label>
-              <input type="text" id="editDireccion" name="direccionUsuario" class="form-control" />
-            </div>
-            <div class="mb-3">
-              <label class="form-label">Nueva contraseña
-                <small class="text-muted">(dejar en blanco para no cambiar)</small>
-              </label>
-              <input type="password" id="editContrasena" name="contrasenaUsuario" class="form-control" />
-            </div>
-            <div id="msgPerfil" class="text-center mb-2" style="min-height:1.4em;font-size:0.9rem;"></div>
-            <button type="submit" class="btn btn-principal w-100">
-              <i class="bi bi-floppy2-fill me-1"></i> Guardar cambios
-            </button>
-          </form>
+            <div id="errorUbicacionPerfil" class="text-danger mt-1 d-none"
+                 style="font-size:0.82rem;"></div>
+          </div>
+          <input type="hidden" id="lugarUsuarioPerfil">
+          <input type="hidden" id="latitudUsuarioPerfil">
+          <input type="hidden" id="longitudUsuarioPerfil">
+
+          <div id="msgPerfil" class="text-center mb-2"
+               style="min-height:1.4em;font-size:0.9rem;"></div>
+          <button class="btn btn-principal w-100" id="btnGuardarPerfil">
+            <i class="bi bi-floppy2-fill me-1"></i> Guardar cambios
+          </button>
         </div>
+      </div>
+
+      <!-- ZONA DE PELIGRO -->
+      <div class="mt-5 pt-4" style="border-top:2px solid #fee2e2;">
+        <h5 style="color:#dc2626;font-weight:700;">
+          <i class="bi bi-exclamation-triangle-fill me-2"></i>Zona de peligro
+        </h5>
+        <p style="font-size:0.88rem;color:#888;">
+          Eliminar tu cuenta borrará permanentemente todos tus datos, publicaciones,
+          mensajes, favoritos y alertas. Esta acción no se puede deshacer.
+        </p>
+        <button class="btn btn-outline-danger btn-sm" onclick="mostrarModalEliminar()">
+          <i class="bi bi-trash3-fill me-1"></i> Eliminar mi cuenta
+        </button>
       </div>
     </main>
   </div>
 
+  <!-- Modal confirmar eliminación -->
+  <div class="modal fade" id="modalEliminarCuenta" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content border-0 shadow">
+        <div class="modal-header border-0">
+          <h5 class="modal-title text-danger fw-bold">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>Eliminar cuenta
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <p style="font-size:0.9rem;">
+            Esta acción es <strong>irreversible</strong>. Se eliminarán todos tus datos,
+            publicaciones, mensajes y alertas.
+          </p>
+          <p style="font-size:0.9rem;">Para confirmar, introduce tu contraseña actual:</p>
+          <input type="password" id="passEliminarCuenta" class="form-control"
+                 placeholder="Tu contraseña actual">
+          <div id="msgEliminarCuenta" class="text-danger mt-2"
+               style="font-size:0.85rem;"></div>
+        </div>
+        <div class="modal-footer border-0">
+          <button type="button" class="btn btn-secondary btn-sm"
+                  data-bs-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-danger btn-sm"
+                  onclick="confirmarEliminarCuenta()">
+            Sí, eliminar mi cuenta definitivamente
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-  <script src="/adopciones/assets/perfil-common.js"></script>
+  <script src="assets/ubicacion-common.js"></script>
+  <script src="assets/perfil-common.js"></script>
   <script>
-    function previewFoto(input) {
-      if (input.files && input.files[0]) {
-        const reader = new FileReader();
-        reader.onload = e => {
-          document.getElementById("avatarPerfil").src  = e.target.result;
-          document.getElementById("avatarSidebar").src = e.target.result;
-        };
-        reader.readAsDataURL(input.files[0]);
-      }
-    }
+    let ubicacionPerfilValida = false;
+    let timeoutPerfil = null;
 
-    async function cargarDatosPerfil() {
-      try {
-        const res  = await fetch("/adopciones/php/obtenerPerfil.php");
-        const data = await res.json();
-        document.getElementById("editNombre").value    = data.nombreUsuario    || "";
-        document.getElementById("editEmail").value     = data.emailUsuario     || "";
-        document.getElementById("editTelefono").value  = data.telefonoUsuario  || "";
-        document.getElementById("editDireccion").value = data.direccionUsuario || "";
+    const inputPerfil = document.getElementById('buscadorUbicacionPerfil');
+    const sugerPerfil = document.getElementById('sugerenciasPerfil');
 
-        if (parseInt(data.tieneFoto) === 1) {
-          const src = `/adopciones/php/verFotoPerfil.php?id=${data.idUsuario}&t=${Date.now()}`;
-          document.getElementById("avatarPerfil").src  = src;
-          document.getElementById("avatarSidebar").src = src;
-        }
-      } catch {
-        console.warn("No se pudieron cargar los datos del perfil.");
-      }
-    }
+    inputPerfil.addEventListener('input', () => {
+      ubicacionPerfilValida = false;
+      document.getElementById('ubicacionPerfilConfirmada').classList.add('d-none');
+      document.getElementById('errorUbicacionPerfil').classList.add('d-none');
+      document.getElementById('lugarUsuarioPerfil').value    = '';
+      document.getElementById('latitudUsuarioPerfil').value  = '';
+      document.getElementById('longitudUsuarioPerfil').value = '';
 
-    document.getElementById("formEditarPerfil").addEventListener("submit", async e => {
-      e.preventDefault();
-      const msg   = document.getElementById("msgPerfil");
-      const datos = new FormData(e.target);
-      const fotoInput = document.getElementById("inputFotoPerfil");
-      if (fotoInput.files[0]) datos.set("fotoPerfil", fotoInput.files[0]);
+      const texto = inputPerfil.value.trim();
+      clearTimeout(timeoutPerfil);
+      if (texto.length < 2) { sugerPerfil.style.display = 'none'; return; }
 
-      try {
-        const res   = await fetch("/adopciones/php/editarPerfil.php", { method: "POST", body: datos });
-        const texto = await res.text();
-        if (texto.trim() === "success") {
-          msg.className   = "text-success text-center mb-2";
-          msg.textContent = "✅ Cambios guardados correctamente.";
-          document.getElementById("sidebarNombre").textContent    = document.getElementById("editNombre").value;
-          document.getElementById("nombreUsuarioNav").textContent = document.getElementById("editNombre").value;
-        } else {
-          msg.className   = "text-danger text-center mb-2";
-          msg.textContent = texto;
-        }
-      } catch {
-        msg.className   = "text-danger text-center mb-2";
-        msg.textContent = "Error al conectar con el servidor.";
+      timeoutPerfil = setTimeout(async () => {
+        const resultados = await buscarUbicaciones(texto);
+        sugerPerfil.innerHTML = '';
+        if (!resultados.length) { sugerPerfil.style.display = 'none'; return; }
+
+        resultados.forEach(lugar => {
+          const ubic = extraerUbicacionDesdeNominatim(lugar);
+          if (!ubic.municipio || !ubic.provincia || !ubic.comunidad) return;
+          const div = document.createElement('div');
+          div.className   = 'sugerencia-perfil-item';
+          div.textContent = ubic.texto;
+          div.addEventListener('click', () => seleccionarUbicacionPerfil(lugar));
+          sugerPerfil.appendChild(div);
+        });
+
+        sugerPerfil.style.display = sugerPerfil.children.length ? 'block' : 'none';
+      }, 400);
+    });
+
+    document.addEventListener('click', e => {
+      if (!e.target.closest('.ubicacion-perfil-wrapper')) {
+        sugerPerfil.style.display = 'none';
       }
     });
 
-    inicializar();
-    cargarDatosPerfil();
+    function seleccionarUbicacionPerfil(lugar) {
+      const ubic = extraerUbicacionDesdeNominatim(lugar);
+
+      if (!ubic.municipio || !ubic.provincia || !ubic.comunidad) {
+        const err = document.getElementById('errorUbicacionPerfil');
+        err.textContent = 'Selecciona un municipio más específico con Municipio, Provincia y Comunidad Autónoma.';
+        err.classList.remove('d-none');
+        ubicacionPerfilValida = false;
+        return;
+      }
+
+      document.getElementById('lugarUsuarioPerfil').value    = ubic.texto;
+      document.getElementById('latitudUsuarioPerfil').value  = ubic.lat;
+      document.getElementById('longitudUsuarioPerfil').value = ubic.lon;
+
+      inputPerfil.value = '';
+      sugerPerfil.style.display = 'none';
+
+      const conf = document.getElementById('ubicacionPerfilConfirmada');
+      document.getElementById('textoUbicacionPerfil').textContent = ubic.texto;
+      conf.classList.remove('d-none');
+      document.getElementById('errorUbicacionPerfil').classList.add('d-none');
+      ubicacionPerfilValida = true;
+    }
+
+    // ── Preview foto ──
+    document.getElementById('inputFotoPerfil').addEventListener('change', function() {
+      const file = this.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = e => {
+        document.getElementById('fotoPerfilPreview').src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+
+    // ── Cargar datos del perfil ──
+    async function cargarPerfil() {
+      try {
+        const res  = await fetch('php/obtenerPerfil.php');
+        const data = await res.json();
+        if (data.error) { window.location.href = 'login.html'; return; }
+
+        document.getElementById('editNombre').value = data.nombreUsuario || '';
+        document.getElementById('editEmail').value  = data.emailUsuario  || '';
+
+        if (parseInt(data.tieneFoto) === 1) {
+          document.getElementById('fotoPerfilPreview').src =
+            'php/verFotoPerfil.php?t=' + Date.now();
+        }
+
+        if (data.lugarUsuario) {
+          document.getElementById('textoUbicacionActual').textContent = data.lugarUsuario;
+          document.getElementById('ubicacionActual').classList.remove('d-none');
+          document.getElementById('lugarUsuarioPerfil').value    = data.lugarUsuario;
+          document.getElementById('latitudUsuarioPerfil').value  = data.latitudUsuario  || '';
+          document.getElementById('longitudUsuarioPerfil').value = data.longitudUsuario || '';
+          ubicacionPerfilValida = true;
+        }
+      } catch { window.location.href = 'login.html'; }
+    }
+
+    // ── Guardar perfil ──
+    document.getElementById('btnGuardarPerfil').addEventListener('click', async () => {
+      const msg = document.getElementById('msgPerfil');
+      msg.className   = 'text-center mb-2';
+      msg.textContent = '';
+
+      const lugar    = document.getElementById('lugarUsuarioPerfil').value;
+      const latitud  = document.getElementById('latitudUsuarioPerfil').value;
+      const longitud = document.getElementById('longitudUsuarioPerfil').value;
+
+      if (lugar && !ubicacionPerfilValida) {
+        msg.className  += ' text-danger';
+        msg.textContent = 'La ubicación no es válida. Selecciona un municipio con Municipio, Provincia y Comunidad Autónoma.';
+        return;
+      }
+
+      const datos = new FormData();
+      datos.append('nombreUsuario',     document.getElementById('editNombre').value.trim());
+      datos.append('emailUsuario',      document.getElementById('editEmail').value.trim());
+      datos.append('contrasenaUsuario', document.getElementById('editPass').value);
+      datos.append('lugarUsuario',      lugar);
+      datos.append('latitudUsuario',    latitud);
+      datos.append('longitudUsuario',   longitud);
+
+      const foto = document.getElementById('inputFotoPerfil').files[0];
+      if (foto) datos.append('fotoPerfil', foto);
+
+      try {
+        const res  = await fetch('php/editarPerfil.php', { method: 'POST', body: datos });
+        const data = await res.json();
+        if (data.ok) {
+          msg.className  += ' text-success';
+          msg.textContent = '✅ Perfil actualizado correctamente.';
+
+          if (foto) {
+            const nuevaSrc = 'php/verFotoPerfil.php?t=' + Date.now();
+            document.getElementById('fotoPerfilPreview').src = nuevaSrc;
+            const avatarSidebar = document.getElementById('avatarSidebar');
+            if (avatarSidebar) avatarSidebar.src = nuevaSrc;
+          }
+
+          if (lugar) {
+            document.getElementById('textoUbicacionActual').textContent = lugar;
+            document.getElementById('ubicacionActual').classList.remove('d-none');
+            document.getElementById('ubicacionPerfilConfirmada').classList.add('d-none');
+            inputPerfil.value = '';
+          }
+        } else {
+          msg.className  += ' text-danger';
+          msg.textContent = data.error || 'Error al guardar.';
+        }
+      } catch {
+        msg.className  += ' text-danger';
+        msg.textContent = 'Error al conectar con el servidor.';
+      }
+    });
+
+    // ── Eliminar cuenta ──
+    function mostrarModalEliminar() {
+      document.getElementById('passEliminarCuenta').value = '';
+      document.getElementById('msgEliminarCuenta').textContent = '';
+      new bootstrap.Modal(document.getElementById('modalEliminarCuenta')).show();
+    }
+
+    async function confirmarEliminarCuenta() {
+      const pass = document.getElementById('passEliminarCuenta').value;
+      const msg  = document.getElementById('msgEliminarCuenta');
+      msg.textContent = '';
+
+      if (!pass) {
+        msg.textContent = 'Introduce tu contraseña para confirmar.';
+        return;
+      }
+
+      const datos = new FormData();
+      datos.append('password', pass);
+
+      try {
+        const res  = await fetch('php/eliminarCuenta.php', { method: 'POST', body: datos });
+        const data = await res.json();
+        if (data.ok) {
+          bootstrap.Modal.getInstance(
+            document.getElementById('modalEliminarCuenta')).hide();
+          alert('Tu cuenta ha sido eliminada. Hasta pronto.');
+          window.location.href = 'login.html';
+        } else {
+          msg.textContent = data.error || 'Error al eliminar la cuenta.';
+        }
+      } catch {
+        msg.textContent = 'Error al conectar con el servidor.';
+      }
+    }
+
+    inicializar().then(cargarPerfil);
   </script>
+  <script src="assets/footer-common.js"></script>
 </body>
 </html>

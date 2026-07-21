@@ -6,7 +6,7 @@
   <title>Mascota | Adopta</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet" />
-  <link rel="stylesheet" href="/adopciones/assets/estilos.css" />
+  <link rel="stylesheet" href="assets/estilos.css" />
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet" />
   <style>
     .nav-icon-wrapper {
@@ -30,34 +30,55 @@
       display: flex; align-items: center; justify-content: center;
       pointer-events: none;
     }
+    /* ── Ficha responsive ── */
+    @media (max-width: 767px) {
+      .ficha-col-foto { margin-bottom: 1.5rem; }
+      .btn-chat { font-size: 0.9rem; padding: 0.6rem 1rem; }
+      .descripcion-box { padding: 1rem 1.1rem; font-size: 0.92rem; }
+      .lugar-box { font-size: 0.9rem; }
+    }
   </style>
 </head>
 
 <body>
   <nav class="navbar-adopciones">
     <a class="navbar-brand" href="index.html">
-      <img src="/adopciones/assets/logo.png" alt="Logo" />
+      <img src="assets/logo.png" alt="Logo" />
       <span>Adopta</span>
     </a>
     <div class="nav-icons">
-      <div class="nav-icon-wrapper" onclick="window.location.href='favoritos.html'" title="Favoritos">
+      <div class="nav-icon-wrapper" id="btnNavFav" title="Favoritos"
+           onclick="accionProtegida('favoritos.html')">
         <i class="bi bi-heart-fill nav-item-icon"></i>
       </div>
-      <div class="nav-icon-wrapper" onclick="window.location.href='mensajes.html'" title="Buzón" id="wrapperSobre">
+      <div class="nav-icon-wrapper" id="btnNavMsg" title="Buzón"
+           onclick="accionProtegida('mensajes.html')">
         <i class="bi bi-envelope-fill nav-item-icon"></i>
         <span class="badge-mensajes d-none" id="badgeMensajes"></span>
       </div>
       <span id="nombreUsuarioNav" class="navbar-usuario"
-            onclick="window.location.href='perfil.html'" title="Ver mi perfil"></span>
+            onclick="accionProtegida('perfil.html')" title="Ver mi perfil"></span>
     </div>
   </nav>
 
-  <main class="container my-5" id="contenidoMascota">
+  <main class="container my-4 my-md-5" id="contenidoMascota">
     <p class="text-center text-muted">Cargando...</p>
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
   <script>
+
+    let _logueado  = false;
+    let _usuarioId = null;
+
+    function accionProtegida(destino) {
+      if (!_logueado) {
+        window.location.href = "login.html";
+        return false;
+      }
+      if (destino) window.location.href = destino;
+      return true;
+    }
 
     function formatFecha(f) {
       if (!f) return "";
@@ -69,7 +90,7 @@
 
     async function cargarBadgeMensajes() {
       try {
-        const res   = await fetch("/adopciones/php/contarMensajesNoLeidos.php");
+        const res   = await fetch("php/contarMensajesNoLeidos.php");
         const data  = await res.json();
         const badge = document.getElementById("badgeMensajes");
         if (data.noLeidos > 0) {
@@ -83,31 +104,38 @@
     const idMascota = parseInt(params.get("id"));
     if (!idMascota) window.location.href = "index.html";
 
-    // ── Variables galería ──
     let fotosDisponibles = [];
     let fotoActual       = 0;
 
     async function inicializar() {
       try {
-        const res  = await fetch("/adopciones/php/index.php");
-        if (!res.ok) throw new Error();
+        const res  = await fetch("php/index.php");
         const data = await res.json();
-        document.getElementById("nombreUsuarioNav").textContent = data.usuario;
-        window._usuarioId = data.id;
-      } catch {
-        window.location.href = "login.html";
-      }
+        _logueado  = data.logueado === true;
+        _usuarioId = data.id;
+
+        const spanNombre = document.getElementById("nombreUsuarioNav");
+        if (_logueado) {
+          spanNombre.textContent = data.usuario;
+          cargarBadgeMensajes();
+        } else {
+          spanNombre.innerHTML = '<i class="bi bi-person-circle"></i>';
+        }
+      } catch { /* silencioso */ }
     }
 
     async function cargarMascota() {
       try {
-        const res = await fetch(`/adopciones/php/obtenerMascota.php?id=${idMascota}`);
+        const res = await fetch(`php/obtenerMascota.php?id=${idMascota}`);
         const m   = await res.json();
         if (m.error) { window.location.href = "index.html"; return; }
 
-        const favRes  = await fetch(`/adopciones/php/esFavorito.php?id=${idMascota}`);
-        const favData = await favRes.json();
-        const esFav   = favData.favorito === true;
+        let esFav = false;
+        if (_logueado) {
+          const favRes  = await fetch(`php/esFavorito.php?id=${idMascota}`);
+          const favData = await favRes.json();
+          esFav = favData.favorito === true;
+        }
 
         const edad   = m.edadMascota ? `${m.edadMascota} año${m.edadMascota == 1 ? "" : "s"}` : "Desconocida";
         const badgeC = m.estadoAdopcionMascota === "En adopción" ? "bg-success"
@@ -117,27 +145,27 @@
         const inicialPub   = (m.nombrePublicador || '?')[0].toUpperCase();
         const tieneFotoPub = parseInt(m.tieneFotoPublicador) === 1;
         const avatarPub    = tieneFotoPub
-          ? `<img src="/adopciones/php/verFotoPerfil.php?id=${m.idUsuarioFK1}"
+          ? `<img src="php/verFotoPerfil.php?id=${m.idUsuarioFK1}"
                   alt="${m.nombrePublicador}"
                   style="width:28px;height:28px;border-radius:50%;object-fit:cover;border:1px solid #d0e4f5;" />`
           : `<span class="avatar-inicial">${inicialPub}</span>`;
 
         document.getElementById("contenidoMascota").innerHTML = `
-          <div class="mb-4">
+          <div class="mb-3">
             <a href="javascript:history.back()" class="btn btn-sm btn-outline-secondary">
               <i class="bi bi-arrow-left"></i> Volver
             </a>
           </div>
 
-          <div class="row g-5">
-            <div class="col-md-5">
-              <!-- Foto principal con flechas -->
+          <div class="row g-4">
+            <div class="col-12 col-md-5 ficha-col-foto">
               <div class="foto-wrapper" id="fotoWrapper">
                 <img id="fotoPrincipal"
-                     src="/adopciones/php/verImagen.php?id=${m.idMascota}"
+                     src="php/verImagen.php?id=${m.idMascota}"
                      alt="${m.nombreMascota}"
-                     onerror="this.src='/adopciones/assets/no-imagen.png'" />
-                <button class="btn-favorito" id="btnFavorito" onclick="toggleFavorito()"
+                     onerror="this.src='assets/no-imagen.png'" />
+                <button class="btn-favorito" id="btnFavorito"
+                        onclick="gestionarFavorito()"
                         title="${esFav ? "Quitar de favoritos" : "Añadir a favoritos"}">
                   <i class="bi ${esFav ? "bi-heart-fill" : "bi-heart"}"></i>
                 </button>
@@ -149,19 +177,17 @@
                 </button>
               </div>
 
-              <!-- Miniaturas -->
               <div class="fotos-miniaturas" id="fotosMiniaturas"></div>
 
-              <!-- Botón chat -->
-              <div class="mt-4">
+              <div class="mt-3">
                 <button class="btn-chat w-100 justify-content-center"
-                        onclick="iniciarChat(${m.idUsuarioFK1})">
+                        onclick="gestionarChat(${m.idUsuarioFK1})">
                   <i class="bi bi-envelope-fill"></i> Contactar por chat
                 </button>
               </div>
             </div>
 
-            <div class="col-md-7">
+            <div class="col-12 col-md-7">
               <div class="d-flex align-items-center gap-3 mb-2 flex-wrap">
                 <h1 class="ficha-titulo mb-0">${m.nombreMascota}</h1>
                 <span class="badge ${badgeC} badge-estado">${m.estadoAdopcionMascota}</span>
@@ -211,8 +237,6 @@
           </div>`;
 
         window._esFavorito = esFav;
-
-        // Cargar galería
         await cargarGaleria(m.idMascota);
 
       } catch(err) {
@@ -222,31 +246,49 @@
       }
     }
 
-    // ── Galería ──
+    async function gestionarFavorito() {
+      if (!accionProtegida()) return;
+      try {
+        const datos = new FormData();
+        datos.append("idMascota", idMascota);
+        datos.append("accion", window._esFavorito ? "quitar" : "añadir");
+        const res   = await fetch("php/toggleFavorito.php", { method: "POST", body: datos });
+        const texto = await res.text();
+        if (texto.trim() === "success") {
+          window._esFavorito = !window._esFavorito;
+          const btn  = document.getElementById("btnFavorito");
+          const icon = btn.querySelector("i");
+          icon.className = window._esFavorito ? "bi bi-heart-fill" : "bi bi-heart";
+          btn.title      = window._esFavorito ? "Quitar de favoritos" : "Añadir a favoritos";
+        }
+      } catch { alert("Error al actualizar favoritos."); }
+    }
+
+    function gestionarChat(idDestinatario) {
+      if (!accionProtegida()) return;
+      if (idDestinatario == _usuarioId) {
+        alert("No puedes chatear contigo mismo."); return;
+      }
+      window.location.href = `mensajes.html?con=${idDestinatario}&mascota=${idMascota}`;
+    }
+
     async function cargarGaleria(id) {
       try {
-        // Comprobar qué fotos existen pidiendo cada una
         const urls = [
-          `/adopciones/php/verImagen.php?id=${id}`,
-          `/adopciones/php/verImagen.php?id=${id}&n=2`,
-          `/adopciones/php/verImagen.php?id=${id}&n=3`
+          `php/verImagen.php?id=${id}`,
+          `php/verImagen.php?id=${id}&n=2`,
+          `php/verImagen.php?id=${id}&n=3`
         ];
-
-        // Verificar cuáles responden con imagen real
         const checks = await Promise.all(urls.map(url =>
           fetch(url, { method: "HEAD" }).then(r => r.ok).catch(() => false)
         ));
-
         fotosDisponibles = urls.filter((_, i) => checks[i]);
         fotoActual       = 0;
+        if (fotosDisponibles.length <= 1) return;
 
-        if (fotosDisponibles.length <= 1) return; // Solo una foto, no hace falta galería
-
-        // Mostrar flechas
         document.getElementById("btnIzq").classList.remove("d-none");
         document.getElementById("btnDer").classList.remove("d-none");
 
-        // Miniaturas
         const cont = document.getElementById("fotosMiniaturas");
         cont.innerHTML = "";
         fotosDisponibles.forEach((url, i) => {
@@ -255,13 +297,9 @@
           img.alt   = `Foto ${i + 1}`;
           img.onerror = () => img.style.display = "none";
           if (i === 0) img.classList.add("activa");
-          img.addEventListener("click", () => {
-            fotoActual = i;
-            actualizarFoto(i);
-          });
+          img.addEventListener("click", () => { fotoActual = i; actualizarFoto(i); });
           cont.appendChild(img);
         });
-
       } catch { /* silencioso */ }
     }
 
@@ -279,87 +317,8 @@
       actualizarFoto(fotoActual);
     }
 
-    // ── Toggle favorito ──
-    async function toggleFavorito() {
-      try {
-        const datos = new FormData();
-        datos.append("idMascota", idMascota);
-        datos.append("accion", window._esFavorito ? "quitar" : "añadir");
-        const res   = await fetch("/adopciones/php/toggleFavorito.php", { method: "POST", body: datos });
-        const texto = await res.text();
-        if (texto.trim() === "success") {
-          window._esFavorito = !window._esFavorito;
-          const btn  = document.getElementById("btnFavorito");
-          const icon = btn.querySelector("i");
-          icon.className = window._esFavorito ? "bi bi-heart-fill" : "bi bi-heart";
-          btn.title      = window._esFavorito ? "Quitar de favoritos" : "Añadir a favoritos";
-        }
-      } catch { alert("Error al actualizar favoritos."); }
-    }
-
-    // ── Iniciar chat ──
-    function iniciarChat(idDestinatario) {
-      if (idDestinatario == window._usuarioId) {
-        alert("No puedes chatear contigo mismo."); return;
-      }
-      window.location.href = `mensajes.html?con=${idDestinatario}&mascota=${idMascota}`;
-    }
-
-    inicializar().then(() => {
-      cargarMascota();
-      cargarBadgeMensajes();
-    });
+    inicializar().then(() => cargarMascota());
   </script>
-<!-- FOOTER -->
-<footer class="footer-adopciones">
-  <div class="container">
-    <div class="row g-4 pb-3">
-
-      <!-- Marca -->
-      <div class="col-12 col-md-4">
-        <div class="footer-brand">
-          <img src="/adopciones/assets/logo.png" alt="Logo"
-               style="width:28px;height:28px;object-fit:contain;filter:brightness(10);" />
-          Adopta
-        </div>
-        <p class="footer-desc">
-          Conectamos animales que necesitan un hogar con personas dispuestas a dárselo.
-          Juntos hacemos un mundo mejor 🐾
-        </p>
-      </div>
-
-      <!-- Navegación -->
-      <div class="col-6 col-md-2">
-        <div class="footer-titulo">Navegación</div>
-        <a href="/adopciones/public/index.html">Inicio</a>
-        <a href="/adopciones/public/publicar.html" target="_blank">Publicar animal</a>
-        <a href="/adopciones/public/favoritos.html">Mis favoritos</a>
-        <a href="/adopciones/public/mensajes.html">Mensajes</a>
-      </div>
-
-      <!-- Mi cuenta -->
-      <div class="col-6 col-md-2">
-        <div class="footer-titulo">Mi cuenta</div>
-        <a href="/adopciones/public/perfil.html">Mi perfil</a>
-        <a href="/adopciones/public/publicaciones.html">Mis publicaciones</a>
-      </div>
-
-      <!-- Info -->
-      <div class="col-12 col-md-4">
-        <div class="footer-titulo">¿Encontraste un animal?</div>
-        <p class="footer-info-text">
-          Si has encontrado un animal perdido o abandonado, comprueba si lleva chip
-          consultando con un veterinario o la policía local antes de publicarlo.
-          Tu ayuda puede cambiar su vida. 💙
-        </p>
-      </div>
-
-    </div>
-  </div>
-
-  <div class="footer-bottom">
-    © 2026 Adopta — Proyecto Integrado · Desarrollo de Aplicaciones Web
-  </div>
-</footer>
+  <script src="assets/footer-common.js"></script>
 </body>
 </html>

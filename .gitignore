@@ -1,0 +1,9 @@
+# Nunca subir el config.php real (contiene contraseñas de BD y del correo).
+# La plantilla sin credenciales es includes/config.example.php, esa sí se sube.
+includes/config.php
+
+# Archivos habituales del sistema/editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

@@ -6,31 +6,138 @@
   <title>Adopta 🐾 | Encuentra tu compañero ideal</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet" />
-  <link rel="stylesheet" href="/adopciones/assets/estilos.css" />
+  <link rel="stylesheet" href="assets/estilos.css" />
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    .filtro-ubicacion-wrapper { position: relative; max-width: 500px; margin: 0 auto; }
+    .sugerencias-filtro {
+      position: absolute;
+      top: 100%; left: 0; right: 0;
+      background: #fff;
+      border: 1px solid #d0e4f5;
+      border-top: none;
+      border-radius: 0 0 10px 10px;
+      max-height: 220px;
+      overflow-y: auto;
+      z-index: 500;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      display: none;
+      text-align: left;
+    }
+    .sugerencia-filtro-item {
+      padding: 0.6rem 0.9rem;
+      cursor: pointer;
+      font-size: 0.86rem;
+      border-bottom: 1px solid #f0f4f8;
+    }
+    .sugerencia-filtro-item:hover { background: #eef5fc; }
+    .radio-control {
+      max-width: 500px;
+      margin: 1rem auto 0;
+      display: none;
+    }
+    .radio-control.activo { display: block; }
+    .radio-valor {
+      text-align: center;
+      font-weight: 600;
+      color: var(--color-principal-oscuro);
+      margin-bottom: 0.4rem;
+      font-size: 0.92rem;
+    }
+    .ubicacion-filtro-chip {
+      display: none;
+      align-items: center;
+      gap: 0.5rem;
+      background: #eef5fc;
+      color: var(--color-principal-oscuro);
+      border-radius: 20px;
+      padding: 0.4rem 1rem;
+      font-size: 0.85rem;
+      max-width: fit-content;
+      margin: 0.6rem auto 0;
+    }
+    .ubicacion-filtro-chip i.bi-x-circle-fill { cursor: pointer; }
+    .noti-item {
+      padding: 0.8rem 1rem;
+      border-bottom: 1px solid #f0f4f8;
+      transition: background 0.15s;
+    }
+    .noti-item:hover { background: #f8f9fb; }
+    .noti-nueva { background: #eef5fc; }
+    .carrusel-contenedor {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .carrusel-outer { flex: 1; overflow: hidden; border-radius: 14px; position: relative; }
+    .carrusel-flecha {
+      background: #fff;
+      border: 1px solid #d0e4f5;
+      border-radius: 50%;
+      width: 42px;
+      height: 42px;
+      min-width: 42px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      color: var(--color-principal-oscuro);
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+      transition: background 0.2s, transform 0.15s;
+      flex-shrink: 0;
+    }
+    .carrusel-flecha:hover {
+      background: var(--color-principal);
+      color: #fff;
+      transform: scale(1.08);
+    }
+  </style>
 </head>
 
 <body>
   <nav class="navbar-adopciones">
     <a class="navbar-brand" href="#">
-      <img src="/adopciones/assets/logo.png" alt="Logo" />
+      <img src="assets/logo.png" alt="Logo" />
       <span>Adopta</span>
     </a>
     <div class="nav-icons">
       <div class="nav-icon-wrapper"
-           onclick="window.location.href='favoritos.html'" title="Favoritos">
+           onclick="accionProtegida('favoritos.html')" title="Favoritos">
         <i class="bi bi-heart-fill nav-item-icon"></i>
       </div>
       <div class="nav-icon-wrapper"
-           onclick="window.location.href='mensajes.html'" title="Buzón">
+           onclick="accionProtegida('mensajes.html')" title="Buzón">
         <i class="bi bi-envelope-fill nav-item-icon"></i>
         <span class="badge-mensajes d-none" id="badgeMensajes"></span>
       </div>
+      <div class="nav-icon-wrapper" onclick="toggleNotificaciones()" title="Alertas y notificaciones">
+        <i class="bi bi-bell-fill nav-item-icon"></i>
+        <span class="badge-mensajes d-none" id="badgeNotificaciones"></span>
+      </div>
       <span id="nombreUsuario" class="navbar-usuario"
-            onclick="window.location.href='perfil.html'" title="Ver mi perfil">Usuario</span>
-      <button class="btn btn-publicar" onclick="abrirPublicar()">+ Publicar</button>
+            onclick="accionProtegida('perfil.html')" title="Ver mi perfil">
+        <i class="bi bi-person-circle"></i>
+      </span>
+      <button class="btn btn-publicar" onclick="intentarPublicar()">+ Publicar</button>
     </div>
   </nav>
+
+  <!-- Panel notificaciones -->
+  <div id="panelNotificaciones" class="d-none"
+       style="position:fixed;top:70px;right:16px;width:340px;max-height:420px;
+              background:#fff;border-radius:14px;box-shadow:0 8px 30px rgba(0,0,0,0.15);
+              overflow:hidden;z-index:1000;border:1px solid #e5ecf4;">
+    <div style="padding:0.9rem 1rem;border-bottom:1px solid #e5ecf4;
+                display:flex;justify-content:space-between;align-items:center;">
+      <span style="font-weight:700;font-size:0.95rem;color:var(--color-principal-oscuro);">
+        🔔 Notificaciones
+      </span>
+      <i class="bi bi-x-lg" style="cursor:pointer;color:#aaa;"
+         onclick="toggleNotificaciones()"></i>
+    </div>
+    <div id="listaNotificaciones" style="overflow-y:auto;max-height:340px;"></div>
+  </div>
 
   <main class="container my-5">
 
@@ -51,20 +158,20 @@
       </div>
 
       <div class="row justify-content-center g-2 filtros-container mb-2">
-        <div class="col-10 col-md-2">
+        <div class="col-10 col-md-3">
           <select class="form-select" id="filtroEspecie" autocomplete="off">
             <option value="">Especie</option>
             <option>Perro</option><option>Gato</option>
             <option>Ave</option><option>Reptil</option>
           </select>
         </div>
-        <div class="col-10 col-md-2">
+        <div class="col-10 col-md-3">
           <select class="form-select" id="filtroSexo" autocomplete="off">
             <option value="">Sexo</option>
             <option>Macho</option><option>Hembra</option>
           </select>
         </div>
-        <div class="col-10 col-md-2">
+        <div class="col-10 col-md-3">
           <select class="form-select" id="filtroEstado" autocomplete="off">
             <option value="">Estado</option>
             <option>En adopción</option>
@@ -74,32 +181,33 @@
         </div>
       </div>
 
+      <!-- FILTRO UBICACIÓN -->
       <div class="row justify-content-center g-2 filtros-container mb-3">
-        <div class="col-10 col-md-3">
-          <select class="form-select" id="filtroComunidad" autocomplete="off">
-            <option value="">Comunidad Autónoma</option>
-            <option>Andalucía</option><option>Aragón</option><option>Asturias</option>
-            <option>Baleares</option><option>Canarias</option><option>Cantabria</option>
-            <option>Castilla-La Mancha</option><option>Castilla y León</option>
-            <option>Cataluña</option><option>Ceuta</option>
-            <option>Comunidad de Madrid</option><option>Comunidad Foral de Navarra</option>
-            <option>Comunidad Valenciana</option><option>Extremadura</option>
-            <option>Galicia</option><option>La Rioja</option>
-            <option>Melilla</option><option>País Vasco</option>
-            <option>Región de Murcia</option>
-          </select>
+        <div class="col-12 col-md-8">
+          <div class="filtro-ubicacion-wrapper">
+            <input type="text" id="buscadorUbicacionFiltro" class="form-control"
+                   placeholder="Buscar por ciudad o municipio..." autocomplete="off">
+            <div class="sugerencias-filtro" id="sugerenciasUbicacionFiltro"></div>
+          </div>
+          <div class="ubicacion-filtro-chip" id="chipUbicacionFiltro">
+            <i class="bi bi-geo-alt-fill"></i>
+            <span id="textoChipUbicacion"></span>
+            <i class="bi bi-x-circle-fill" onclick="limpiarUbicacionFiltro()"></i>
+          </div>
+          <div class="radio-control" id="radioControl">
+            <div class="radio-valor">Radio de búsqueda: <span id="valorRadio">25</span> km</div>
+            <input type="range" class="form-range" id="sliderRadio" min="1" max="200" value="25">
+          </div>
+          <div class="text-center mt-3">
+            <button class="btn btn-sm btn-outline-danger" onclick="guardarAlerta()">
+              <i class="bi bi-bell-fill me-1"></i> Guardar alerta con estos filtros
+            </button>
+          </div>
         </div>
-        <div class="col-10 col-md-3">
-          <select class="form-select" id="filtroProvincia" disabled autocomplete="off">
-            <option value="">Provincia</option>
-          </select>
-        </div>
-        <div class="col-10 col-md-3">
-          <select class="form-select" id="filtroMunicipio" disabled autocomplete="off">
-            <option value="">Municipio</option>
-          </select>
-        </div>
-        <div class="col-10 col-md-1 d-grid">
+      </div>
+
+      <div class="row justify-content-center">
+        <div class="col-10 col-md-3 d-grid">
           <button class="btn btn-outline-primary" id="btnFiltrar">Filtrar</button>
         </div>
       </div>
@@ -110,8 +218,16 @@
       <h4 class="carrusel-titulo">
         <i class="bi bi-exclamation-triangle-fill me-2"></i>Últimos perdidos
       </h4>
-      <div class="carrusel-outer">
-        <div class="carrusel-track" id="carruselTrack"></div>
+      <div class="carrusel-contenedor">
+        <button class="carrusel-flecha" onclick="moverCarrusel(-1)">
+          <i class="bi bi-chevron-left"></i>
+        </button>
+        <div class="carrusel-outer">
+          <div class="carrusel-track" id="carruselTrack"></div>
+        </div>
+        <button class="carrusel-flecha" onclick="moverCarrusel(1)">
+          <i class="bi bi-chevron-right"></i>
+        </button>
       </div>
       <div class="carrusel-dots" id="carruselDots"></div>
     </section>
@@ -126,124 +242,49 @@
 
   </main>
 
-  <!-- FOOTER -->
-  <footer class="footer-adopciones">
-    <div class="container">
-      <div class="row g-4 pb-3">
-        <div class="col-12 col-md-4">
-          <div class="footer-brand">
-            <img src="/adopciones/assets/logo.png" alt="Logo"
-                 style="width:28px;height:28px;object-fit:contain;filter:brightness(10);" />
-            Adopta
-          </div>
-          <p class="footer-desc">
-            Conectamos animales que necesitan un hogar con personas dispuestas a dárselo.
-            Juntos hacemos un mundo mejor 🐾
-          </p>
-        </div>
-        <div class="col-6 col-md-2">
-          <div class="footer-titulo">Navegación</div>
-          <a href="/adopciones/public/index.html">Inicio</a>
-          <a href="#" onclick="abrirPublicar(); return false;">Publicar animal</a>
-          <a href="/adopciones/public/favoritos.html">Mis favoritos</a>
-          <a href="/adopciones/public/mensajes.html">Mensajes</a>
-        </div>
-        <div class="col-6 col-md-2">
-          <div class="footer-titulo">Mi cuenta</div>
-          <a href="/adopciones/public/perfil.html">Mi perfil</a>
-          <a href="/adopciones/public/publicaciones.html">Mis publicaciones</a>
-        </div>
-        <div class="col-12 col-md-4">
-          <div class="footer-titulo">¿Encontraste un animal?</div>
-          <p class="footer-info-text">
-            Si has encontrado un animal perdido o abandonado, comprueba si lleva chip
-            consultando con un veterinario o la policía local antes de publicarlo.
-            Tu ayuda puede cambiar su vida. 💙
-          </p>
-        </div>
-      </div>
-    </div>
-    <div class="footer-bottom">
-      © 2026 Adopta — Proyecto Integrado · Desarrollo de Aplicaciones Web
-    </div>
-  </footer>
-
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="assets/ubicacion-common.js"></script>
   <script>
-    // ============================================================
-    // DATOS MAPA
-    // ============================================================
-    const datosMapa = {
-      "Andalucía": {
-        "Almería":  ["Almería","Adra","Berja","El Ejido","Huércal-Overa","Níjar","Roquetas de Mar","Vera"],
-        "Cádiz":    ["Cádiz","Algeciras","Chiclana de la Frontera","El Puerto de Santa María","Jerez de la Frontera","La Línea de la Concepción","Rota","San Fernando","Sanlúcar de Barrameda"],
-        "Córdoba":  ["Córdoba","Baena","Cabra","Lucena","Montilla","Palma del Río","Peñarroya-Pueblonuevo","Pozoblanco","Puente Genil"],
-        "Granada":  ["Granada","Almuñécar","Baza","Guadix","Loja","Maracena","Motril","Santa Fe"],
-        "Huelva":   ["Huelva","Almonte","Ayamonte","Isla Cristina","Lepe","Moguer","Nerva","Punta Umbría"],
-        "Jaén":     ["Jaén","Alcalá la Real","Andújar","Baeza","Linares","Martos","Úbeda","Villacarrillo"],
-        "Málaga":   ["Málaga","Antequera","Benalmádena","Estepona","Fuengirola","Marbella","Mijas","Nerja","Ronda","Torremolinos","Vélez-Málaga"],
-        "Sevilla":  ["Sevilla","Alcalá de Guadaíra","Carmona","Dos Hermanas","Écija","Lebrija","Morón de la Frontera","Osuna","Utrera","Umbrete","Camas","Tomares","Bormujos","Mairena del Aljarafe"]
-      },
-      "Aragón":     { "Huesca":["Huesca","Barbastro","Jaca","Monzón","Sabiñánigo","Fraga"],"Teruel":["Teruel","Alcañiz","Andorra","Utrillas","Calamocha"],"Zaragoza":["Zaragoza","Calatayud","Ejea de los Caballeros","Tarazona","Utebo","Cuarte de Huerva"] },
-      "Asturias":   { "Asturias":["Oviedo","Gijón","Avilés","Mieres","Langreo","Siero","Castrillón","Corvera de Asturias"] },
-      "Baleares":   { "Baleares":["Palma","Ibiza","Manacor","Mahón","Calvià","Llucmajor","Marratxí","Sant Antoni de Portmany"] },
-      "Canarias":   { "Las Palmas":["Las Palmas de Gran Canaria","Arrecife","Puerto del Rosario","Telde","Santa Lucía de Tirajana","San Bartolomé de Tirajana"],"Santa Cruz de Tenerife":["Santa Cruz de Tenerife","San Cristóbal de La Laguna","Arona","Adeje","Puerto de la Cruz","La Orotava","Granadilla de Abona"] },
-      "Cantabria":  { "Cantabria":["Santander","Torrelavega","Camargo","Castro-Urdiales","Piélagos","El Astillero","Medio Cudeyo"] },
-      "Castilla-La Mancha": { "Albacete":["Albacete","Hellín","Almansa","Villarrobledo","La Roda","Caudete"],"Ciudad Real":["Ciudad Real","Alcázar de San Juan","Puertollano","Tomelloso","Valdepeñas","Manzanares"],"Cuenca":["Cuenca","Tarancón","Motilla del Palancar","San Clemente"],"Guadalajara":["Guadalajara","Azuqueca de Henares","Cabanillas del Campo","Alovera"],"Toledo":["Toledo","Talavera de la Reina","Illescas","Consuegra","Ocaña","Seseña"] },
-      "Castilla y León": { "Ávila":["Ávila","Arenas de San Pedro","El Barco de Ávila","Arévalo"],"Burgos":["Burgos","Miranda de Ebro","Aranda de Duero","Medina de Pomar"],"León":["León","Ponferrada","San Andrés del Rabanedo","Astorga","La Bañeza"],"Palencia":["Palencia","Aguilar de Campoo","Guardo","Venta de Baños"],"Salamanca":["Salamanca","Béjar","Ciudad Rodrigo","Santa Marta de Tormes"],"Segovia":["Segovia","Cuéllar","El Espinar","San Ildefonso"],"Soria":["Soria","Almazán","El Burgo de Osma","Ágreda"],"Valladolid":["Valladolid","Medina del Campo","Laguna de Duero","Arroyo de la Encomienda"],"Zamora":["Zamora","Benavente","Toro","Puebla de Sanabria"] },
-      "Cataluña":   { "Barcelona":["Barcelona","Hospitalet de Llobregat","Badalona","Terrassa","Sabadell","Mataró","Santa Coloma de Gramenet","Cornellà de Llobregat","Sant Boi de Llobregat","Rubí"],"Girona":["Girona","Blanes","Lloret de Mar","Figueres","Olot","Salt"],"Lleida":["Lleida","Balaguer","Cervera","Mollerussa","Tàrrega"],"Tarragona":["Tarragona","Reus","Tortosa","El Vendrell","Cambrils","Salou"] },
-      "Ceuta":      { "Ceuta":["Ceuta"] },
-      "Comunidad de Madrid": { "Madrid":["Madrid","Móstoles","Alcalá de Henares","Fuenlabrada","Leganés","Getafe","Alcorcón","Torrejón de Ardoz","Parla","Alcobendas","Las Rozas","Pozuelo de Alarcón","Majadahonda","Rivas-Vaciamadrid","Collado Villalba"] },
-      "Comunidad Foral de Navarra": { "Navarra":["Pamplona","Tudela","Barañáin","Burlada","Estella","Sarriguren","Zizur Mayor"] },
-      "Comunidad Valenciana": { "Alicante":["Alicante","Benidorm","Elche","Torrevieja","Orihuela","Villena","Alcoy","Petrer","San Vicente del Raspeig"],"Castellón":["Castellón de la Plana","Benicàssim","Burriana","Vinaròs","Vila-real","Peñíscola"],"Valencia":["Valencia","Torrent","Gandia","Paterna","Sagunto","Alzira","Mislata","Burjassot","Xirivella"] },
-      "Extremadura": { "Badajoz":["Badajoz","Mérida","Don Benito","Almendralejo","Villanueva de la Serena","Zafra"],"Cáceres":["Cáceres","Plasencia","Navalmoral de la Mata","Miajadas","Trujillo"] },
-      "Galicia":    { "A Coruña":["A Coruña","Santiago de Compostela","Ferrol","Lugo","Ourense","Pontevedra","Vigo"],"Lugo":["Lugo","Monforte de Lemos","Vilalba","Sarria","Chantada"],"Ourense":["Ourense","Verín","O Barco de Valdeorras","Xinzo de Limia"],"Pontevedra":["Vigo","Pontevedra","Vilagarcía de Arousa","Redondela","Cangas","Marín","A Estrada"] },
-      "La Rioja":   { "La Rioja":["Logroño","Calahorra","Arnedo","Haro","Nájera","Alfaro"] },
-      "Melilla":    { "Melilla":["Melilla"] },
-      "País Vasco": { "Álava":["Vitoria-Gasteiz","Amurrio","Llodio","Salvatierra"],"Gipuzkoa":["San Sebastián","Irun","Errenteria","Zarautz","Eibar","Arrasate"],"Bizkaia":["Bilbao","Barakaldo","Getxo","Basauri","Leioa","Santurtzi","Portugalete"] },
-      "Región de Murcia": { "Murcia":["Murcia","Cartagena","Lorca","Molina de Segura","Alcantarilla","Mazarrón","San Javier","Torre-Pacheco","Yecla"] }
-    };
+    let _logueado        = false;
+    let _latUsuario      = null;
+    let _lonUsuario      = null;
+    let filtroLat        = null;
+    let filtroLon        = null;
+    let panelNotiAbierto = false;
+    let timeoutBusquedaFiltro = null;
 
-    // ── Limpiar filtros al cargar ──
-    window.addEventListener("load", () => {
-      document.getElementById("filtroEspecie").value   = "";
-      document.getElementById("filtroSexo").value      = "";
-      document.getElementById("filtroEstado").value    = "";
-      document.getElementById("filtroComunidad").value = "";
-      document.getElementById("filtroProvincia").innerHTML = '<option value="">Provincia</option>';
-      document.getElementById("filtroProvincia").disabled  = true;
-      document.getElementById("filtroMunicipio").innerHTML = '<option value="">Municipio</option>';
-      document.getElementById("filtroMunicipio").disabled  = true;
-    });
+    function accionProtegida(destino) {
+      if (!_logueado) {
+        window.location.href = "login.html";
+        return false;
+      }
+      if (destino) window.location.href = destino;
+      return true;
+    }
 
-    // ── Cascada filtros ──
-    const filtroComunidad = document.getElementById("filtroComunidad");
-    const filtroProvincia = document.getElementById("filtroProvincia");
-    const filtroMunicipio = document.getElementById("filtroMunicipio");
+    function intentarPublicar() {
+      if (!_logueado) {
+        window.location.href = "login.html";
+        return;
+      }
+      abrirPublicar();
+    }
 
-    filtroComunidad.addEventListener("change", () => {
-      const com = filtroComunidad.value;
-      filtroProvincia.innerHTML = '<option value="">Provincia</option>';
-      filtroMunicipio.innerHTML = '<option value="">Municipio</option>';
-      filtroProvincia.disabled = !com;
-      filtroMunicipio.disabled = true;
-      if (com) Object.keys(datosMapa[com] || {}).forEach(p => {
-        const o = document.createElement("option"); o.value = p; o.textContent = p;
-        filtroProvincia.appendChild(o);
-      });
-    });
+    function abrirPublicar() {
+      const ventana = window.open(
+        'publicar.html',
+        'publicar',
+        'width=800,height=750,scrollbars=yes,resizable=yes'
+      );
+      const vigilar = setInterval(() => {
+        if (ventana.closed) {
+          clearInterval(vigilar);
+          obtenerMascotas();
+          cargarPerdidos();
+        }
+      }, 500);
+    }
 
-    filtroProvincia.addEventListener("change", () => {
-      const com = filtroComunidad.value, prov = filtroProvincia.value;
-      filtroMunicipio.innerHTML = '<option value="">Municipio</option>';
-      filtroMunicipio.disabled = !prov;
-      if (prov) (datosMapa[com]?.[prov] || []).forEach(m => {
-        const o = document.createElement("option"); o.value = m; o.textContent = m;
-        filtroMunicipio.appendChild(o);
-      });
-    });
-
-    // ── Utilidades ──
     function formatFecha(f) {
       if (!f) return "";
       const partes = String(f).slice(0, 10).split("-");
@@ -260,39 +301,30 @@
       return "bg-secondary";
     }
 
-    // ── Abrir ventana de publicar ──
-    function abrirPublicar() {
-      const ventana = window.open(
-        '/adopciones/public/publicar.html',
-        'publicar',
-        'width=800,height=750,scrollbars=yes,resizable=yes'
-      );
-      // Vigilar cuando la ventana se cierre para recargar publicaciones
-      const vigilar = setInterval(() => {
-        if (ventana.closed) {
-          clearInterval(vigilar);
-          obtenerMascotas();
-          cargarPerdidos();
-        }
-      }, 500);
-    }
-
-    // ── Cargar usuario ──
-    async function cargarUsuario() {
+    // ── Cargar sesión ──
+    async function cargarSesion() {
       try {
-        const res  = await fetch("/adopciones/php/index.php");
-        if (!res.ok) throw new Error();
+        const res  = await fetch("php/index.php");
         const data = await res.json();
-        document.getElementById("nombreUsuario").textContent = data.usuario;
-      } catch {
-        window.location.href = "login.html";
-      }
+        _logueado  = data.logueado === true;
+
+        const spanNombre = document.getElementById("nombreUsuario");
+        if (_logueado) {
+          spanNombre.innerHTML = data.usuario;
+          spanNombre.onclick   = () => window.location.href = "perfil.html";
+          cargarBadgeMensajes();
+          cargarBadgeNotificaciones();
+          cargarUbicacionUsuario();
+        } else {
+          spanNombre.innerHTML = '<i class="bi bi-person-circle" style="font-size:1.4rem;color:#fff;"></i>';
+          spanNombre.onclick   = () => window.location.href = "login.html";
+        }
+      } catch { /* silencioso */ }
     }
 
-    // ── Badge mensajes no leídos ──
     async function cargarBadgeMensajes() {
       try {
-        const res   = await fetch("/adopciones/php/contarMensajesNoLeidos.php");
+        const res   = await fetch("php/contarMensajesNoLeidos.php");
         const data  = await res.json();
         const badge = document.getElementById("badgeMensajes");
         if (badge && data.noLeidos > 0) {
@@ -304,11 +336,126 @@
       } catch { /* silencioso */ }
     }
 
-    // ── Obtener mascotas ──
-    async function obtenerMascotas(params = {}) {
+    async function cargarBadgeNotificaciones() {
+      try {
+        const res   = await fetch("php/contarNotificaciones.php");
+        const data  = await res.json();
+        const badge = document.getElementById("badgeNotificaciones");
+        if (badge && data.noLeidas > 0) {
+          badge.textContent = data.noLeidas > 9 ? "9+" : data.noLeidas;
+          badge.classList.remove("d-none");
+        } else if (badge) {
+          badge.classList.add("d-none");
+        }
+      } catch { /* silencioso */ }
+    }
+
+    async function toggleNotificaciones() {
+      if (!accionProtegida()) return;
+      const panel = document.getElementById("panelNotificaciones");
+      panelNotiAbierto = !panelNotiAbierto;
+      if (panelNotiAbierto) {
+        panel.classList.remove("d-none");
+        await cargarNotificaciones();
+        await fetch("php/marcarNotificacionesLeidas.php", { method: "POST" });
+        document.getElementById("badgeNotificaciones").classList.add("d-none");
+      } else {
+        panel.classList.add("d-none");
+      }
+    }
+
+    async function cargarNotificaciones() {
+      const cont = document.getElementById("listaNotificaciones");
+      cont.innerHTML = '<p class="text-muted text-center p-3" style="font-size:0.85rem;">Cargando...</p>';
+      try {
+        const res   = await fetch("php/obtenerNotificaciones.php");
+        const lista = await res.json();
+        if (!lista.length) {
+          cont.innerHTML = '<p class="text-muted text-center p-3" style="font-size:0.85rem;">Sin notificaciones aún</p>';
+          return;
+        }
+        cont.innerHTML = '';
+        lista.forEach(n => {
+          const div = document.createElement("div");
+          div.className = "noti-item" + (n.leida == 0 ? " noti-nueva" : "");
+          div.innerHTML = `
+            <p class="mb-1" style="font-size:0.83rem;">${n.mensaje}</p>
+            ${n.idMascotaFK
+              ? `<a href="mascota.html?id=${n.idMascotaFK}"
+                    style="font-size:0.78rem;color:var(--color-principal-oscuro);">
+                    Ver publicación →
+                  </a>`
+              : ""}
+            <small class="text-muted d-block mt-1" style="font-size:0.72rem;">
+              ${n.fechaCreacion ? n.fechaCreacion.slice(0,16).replace("T"," ") : ""}
+            </small>`;
+          cont.appendChild(div);
+        });
+      } catch {
+        cont.innerHTML = '<p class="text-danger text-center p-3" style="font-size:0.85rem;">Error al cargar</p>';
+      }
+    }
+
+    async function cargarUbicacionUsuario() {
+      try {
+        const res  = await fetch("php/obtenerPerfil.php");
+        const data = await res.json();
+        if (data.latitudUsuario && data.longitudUsuario) {
+          _latUsuario = parseFloat(data.latitudUsuario);
+          _lonUsuario = parseFloat(data.longitudUsuario);
+          obtenerMascotas();
+        }
+      } catch { /* silencioso */ }
+    }
+
+    async function guardarAlerta() {
+      if (!accionProtegida()) return;
+      const especie = document.getElementById("filtroEspecie").value;
+      const sexo    = document.getElementById("filtroSexo").value;
+      const estado  = document.getElementById("filtroEstado").value;
+
+      if (!especie && !sexo && !estado && filtroLat === null) {
+        alert("Activa al menos un filtro antes de guardar una alerta.");
+        return;
+      }
+
+      const datos = new FormData();
+      datos.append("especie", especie);
+      datos.append("sexo",    sexo);
+      datos.append("estado",  estado);
+
+      if (filtroLat !== null) {
+        const partes = textoChip.textContent.split(",");
+        datos.append("lat",       filtroLat);
+        datos.append("lon",       filtroLon);
+        datos.append("radio",     document.getElementById("sliderRadio").value);
+        datos.append("municipio", partes[0]?.trim() || "");
+        datos.append("provincia", partes[1]?.trim() || "");
+        datos.append("comunidad", partes[2]?.trim() || "");
+      }
+
+      try {
+        const res  = await fetch("php/guardarAlerta.php", { method: "POST", body: datos });
+        const data = await res.json();
+        if (data.ok) {
+          alert("✅ Alerta guardada. Te notificaremos cuando haya publicaciones que coincidan.");
+        } else {
+          alert("Error: " + (data.error || "No se pudo guardar la alerta."));
+        }
+      } catch {
+        alert("Error al conectar con el servidor.");
+      }
+    }
+
+    async function obtenerMascotas(params) {
+      params = params || {};
       Object.keys(params).forEach(k => { if (!params[k]) delete params[k]; });
+      if (_latUsuario && _lonUsuario && filtroLat === null) {
+        params.latUsuario = _latUsuario;
+        params.lonUsuario = _lonUsuario;
+      }
       const qs  = new URLSearchParams(params).toString();
-      const url = `/adopciones/php/obtenerMascotas.php${qs ? "?" + qs : ""}`;
+      const url = `php/obtenerMascotas.php${qs ? "?" + qs : ""}`;
       try {
         const res      = await fetch(url);
         const mascotas = await res.json();
@@ -319,25 +466,24 @@
       }
     }
 
-    // ── Dibujar tarjetas ──
     function mostrarMascotas(lista) {
       const cont = document.getElementById("contenedorPublicaciones");
       cont.innerHTML = "";
-
       if (!lista.length) {
         cont.innerHTML = "<p class='text-center text-muted col-12'>No se encontraron resultados 😿</p>";
         return;
       }
-
       lista.forEach(m => {
-        const nombre  = m.nombreMascota || "Sin nombre";
-        const edad    = m.edadMascota ? `${m.edadMascota} año${m.edadMascota == 1 ? "" : "s"}` : "";
-        const estado  = m.estadoAdopcionMascota || "";
-        const fecha   = formatFecha(m.fechaPublicacionMascota);
-        const inicial = (m.nombrePublicador || '?')[0].toUpperCase();
-
+        const nombre    = m.nombreMascota || "Sin nombre";
+        const edad      = m.edadMascota ? `${m.edadMascota} año${m.edadMascota == 1 ? "" : "s"}` : "";
+        const estado    = m.estadoAdopcionMascota || "";
+        const fecha     = formatFecha(m.fechaPublicacionMascota);
+        const inicial   = (m.nombrePublicador || '?')[0].toUpperCase();
+        const distancia = m.distanciaKm
+          ? `<span class="text-muted small"> · ${parseFloat(m.distanciaKm).toFixed(1)} km</span>`
+          : "";
         const avatarPublicador = m.idUsuarioFK1
-          ? `<img src="/adopciones/php/verFotoPerfil.php?id=${m.idUsuarioFK1}"
+          ? `<img src="php/verFotoPerfil.php?id=${m.idUsuarioFK1}"
                   onerror="this.outerHTML='<span class=\\'avatar-inicial\\'>${inicial}</span>'"
                   alt="${m.nombrePublicador || ''}" />`
           : `<span class="avatar-inicial">${inicial}</span>`;
@@ -348,9 +494,9 @@
                  onclick="window.location.href='mascota.html?id=${m.idMascota}'"
                  style="cursor:pointer;">
               <div class="img-wrapper">
-                <img src="/adopciones/php/verImagen.php?id=${m.idMascota}"
+                <img src="php/verImagen.php?id=${m.idMascota}"
                      alt="${nombre}"
-                     onerror="this.src='/adopciones/assets/no-imagen.png'">
+                     onerror="this.src='assets/no-imagen.png'">
                 ${m.adoptado == 1 ? '<div class="overlay-adoptado"><span>Adoptado</span></div>' : ""}
               </div>
               <div class="card-body d-flex flex-column">
@@ -359,7 +505,7 @@
                   ${m.especieMascota || ""} • ${m.sexoMascota || ""} • ${edad}
                 </p>
                 <p class="text-muted small mb-1">
-                  <i class="bi bi-geo-alt-fill text-danger"></i> ${m.lugarMascota || ""}
+                  <i class="bi bi-geo-alt-fill text-danger"></i> ${m.lugarMascota || ""} ${distancia}
                 </p>
                 <p class="text-muted small mb-1">
                   <i class="bi bi-calendar3"></i> ${fecha}
@@ -382,23 +528,98 @@
         `<p class='text-center text-danger col-12'>${msg}</p>`;
     }
 
-    // ── Filtros ──
     function aplicarFiltros() {
-      obtenerMascotas({
-        busqueda:  document.getElementById("inputBusqueda").value.trim(),
-        especie:   document.getElementById("filtroEspecie").value,
-        sexo:      document.getElementById("filtroSexo").value,
-        estado:    document.getElementById("filtroEstado").value,
-        comunidad: filtroComunidad.value,
-        provincia: filtroProvincia.value,
-        municipio: filtroMunicipio.value
-      });
+      const params = {
+        busqueda: document.getElementById("inputBusqueda").value.trim(),
+        especie:  document.getElementById("filtroEspecie").value,
+        sexo:     document.getElementById("filtroSexo").value,
+        estado:   document.getElementById("filtroEstado").value
+      };
+      if (filtroLat !== null && filtroLon !== null) {
+        params.lat   = filtroLat;
+        params.lon   = filtroLon;
+        params.radio = document.getElementById("sliderRadio").value;
+      }
+      obtenerMascotas(params);
     }
 
     document.getElementById("btnBuscar").addEventListener("click", aplicarFiltros);
     document.getElementById("btnFiltrar").addEventListener("click", aplicarFiltros);
     document.getElementById("inputBusqueda").addEventListener("keydown", e => {
       if (e.key === "Enter") aplicarFiltros();
+    });
+
+    // ── Filtro ubicación mejorado ──
+    const inputUbicacionFiltro = document.getElementById('buscadorUbicacionFiltro');
+    const sugerenciasFiltroDiv = document.getElementById('sugerenciasUbicacionFiltro');
+    const radioControl         = document.getElementById('radioControl');
+    const sliderRadio          = document.getElementById('sliderRadio');
+    const valorRadioSpan       = document.getElementById('valorRadio');
+    const chipUbicacion        = document.getElementById('chipUbicacionFiltro');
+    const textoChip            = document.getElementById('textoChipUbicacion');
+
+    inputUbicacionFiltro.addEventListener('input', () => {
+      const texto = inputUbicacionFiltro.value.trim();
+      clearTimeout(timeoutBusquedaFiltro);
+      if (texto.length < 2) { sugerenciasFiltroDiv.style.display = 'none'; return; }
+
+      timeoutBusquedaFiltro = setTimeout(async () => {
+        const resultados = await buscarUbicaciones(texto);
+        sugerenciasFiltroDiv.innerHTML = '';
+        if (!resultados.length) { sugerenciasFiltroDiv.style.display = 'none'; return; }
+
+        resultados.forEach(lugar => {
+          const ubic = extraerUbicacionDesdeNominatim(lugar);
+          if (!ubic.texto) return;
+          const div = document.createElement('div');
+          div.className   = 'sugerencia-filtro-item';
+          div.textContent = ubic.texto;
+          div.addEventListener('click', () => seleccionarLugarFiltro(lugar));
+          sugerenciasFiltroDiv.appendChild(div);
+        });
+
+        sugerenciasFiltroDiv.style.display = sugerenciasFiltroDiv.children.length ? 'block' : 'none';
+      }, 400);
+    });
+
+    document.addEventListener('click', e => {
+      if (!e.target.closest('.filtro-ubicacion-wrapper')) {
+        sugerenciasFiltroDiv.style.display = 'none';
+      }
+      if (!e.target.closest('#panelNotificaciones') &&
+          !e.target.closest('.nav-icon-wrapper')) {
+        if (panelNotiAbierto) {
+          document.getElementById("panelNotificaciones").classList.add("d-none");
+          panelNotiAbierto = false;
+        }
+      }
+    });
+
+    function seleccionarLugarFiltro(lugar) {
+      const ubic = extraerUbicacionDesdeNominatim(lugar);
+      filtroLat = ubic.lat;
+      filtroLon = ubic.lon;
+      inputUbicacionFiltro.value = '';
+      sugerenciasFiltroDiv.style.display = 'none';
+      textoChip.textContent = ubic.texto;
+      chipUbicacion.style.display = 'flex';
+      radioControl.classList.add('activo');
+      aplicarFiltros();
+    }
+
+    function limpiarUbicacionFiltro() {
+      filtroLat = null;
+      filtroLon = null;
+      chipUbicacion.style.display = 'none';
+      radioControl.classList.remove('activo');
+      aplicarFiltros();
+    }
+
+    sliderRadio.addEventListener('input', () => {
+      valorRadioSpan.textContent = sliderRadio.value;
+    });
+    sliderRadio.addEventListener('change', () => {
+      if (filtroLat !== null) aplicarFiltros();
     });
 
     // ============================================================
@@ -411,7 +632,7 @@
 
     async function cargarPerdidos() {
       try {
-        const res   = await fetch("/adopciones/php/obtenerMascotas.php?estado=Perdido");
+        const res   = await fetch("php/obtenerMascotas.php?estado=Perdido");
         const lista = await res.json();
         if (!Array.isArray(lista) || !lista.length) return;
         carruselDatos = lista;
@@ -450,6 +671,15 @@
       mostrarGrupo(siguiente, true);
     }
 
+    function moverCarrusel(direccion) {
+      const grupos = Math.ceil(carruselDatos.length / POR_PAGINA);
+      if (grupos <= 1) return;
+      const siguiente = (carruselPagina + direccion + grupos) % grupos;
+      clearInterval(carruselIntervalo);
+      mostrarGrupo(siguiente, true);
+      carruselIntervalo = setInterval(avanzarCarrusel, 10000);
+    }
+
     function mostrarGrupo(pagina, animar) {
       const track  = document.getElementById("carruselTrack");
       const inicio = pagina * POR_PAGINA;
@@ -467,7 +697,7 @@
           const inicial = (m.nombrePublicador || "?")[0].toUpperCase();
 
           const avatarHtml = m.idUsuarioFK1
-            ? `<img src="/adopciones/php/verFotoPerfil.php?id=${m.idUsuarioFK1}"
+            ? `<img src="php/verFotoPerfil.php?id=${m.idUsuarioFK1}"
                     onerror="this.outerHTML='<span class=\\'avatar-inicial\\'>${inicial}</span>'"
                     alt="${m.nombrePublicador || ''}" />`
             : `<span class="avatar-inicial">${inicial}</span>`;
@@ -476,9 +706,9 @@
           card.className = "carrusel-card";
           card.onclick   = () => window.location.href = `mascota.html?id=${m.idMascota}`;
           card.innerHTML = `
-            <img src="/adopciones/php/verImagen.php?id=${m.idMascota}"
+            <img src="php/verImagen.php?id=${m.idMascota}"
                  alt="${nombre}"
-                 onerror="this.src='/adopciones/assets/no-imagen.png'" />
+                 onerror="this.src='assets/no-imagen.png'" />
             <div class="carrusel-card-body">
               <div class="carrusel-card-nombre">${nombre}</div>
               <div class="carrusel-card-sub">${sub}</div>
@@ -501,7 +731,6 @@
           void track.offsetWidth;
           track.classList.add("animar-entrar");
         }
-
         carruselPagina = pagina;
         actualizarDots(pagina);
       }
@@ -515,10 +744,11 @@
     }
 
     // ── Inicio ──
-    cargarUsuario();
+    cargarSesion();
     obtenerMascotas();
-    cargarBadgeMensajes();
     cargarPerdidos();
   </script>
+
+  <script src="assets/footer-common.js"></script>
 </body>
 </html>

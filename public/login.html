@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Iniciar Sesión | Adopciones</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
-  <link href="/adopciones/assets/estilos.css" rel="stylesheet" />
+  <link href="assets/estilos.css" rel="stylesheet" />
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet" />
 </head>
 
@@ -43,7 +43,7 @@
       const mensaje = document.getElementById("mensaje");
 
       try {
-        const res = await fetch("../php/login.php", { method: "POST", body: formData });
+        const res = await fetch("php/login.php", { method: "POST", body: formData });
         const texto = await res.text();
 
         // Si PHP redirige, este fetch no lo sigue, así que controlamos manualmente:
@@ -53,7 +53,7 @@
         }
 
         if (texto.trim() === "success") {
-          window.location.href = "../public/index.html";
+          window.location.href = "index.html";
         } else {
           mensaje.textContent = texto;
         }

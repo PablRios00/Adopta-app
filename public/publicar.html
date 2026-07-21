@@ -5,8 +5,73 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Publicar mascota | Adopta</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="/adopciones/assets/estilos.css">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+  <link rel="stylesheet" href="assets/estilos.css">
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <style>
+    #mapaPublicar {
+      height: 320px;
+      border-radius: 12px;
+      border: 1px solid #d0e4f5;
+      margin-top: 0.6rem;
+      z-index: 1;
+    }
+    .buscador-ubicacion-wrapper { position: relative; }
+    .sugerencias-ubicacion {
+      position: absolute;
+      top: 100%; left: 0; right: 0;
+      background: #fff;
+      border: 1px solid #d0e4f5;
+      border-top: none;
+      border-radius: 0 0 10px 10px;
+      max-height: 220px;
+      overflow-y: auto;
+      z-index: 500;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      display: none;
+    }
+    .sugerencia-item {
+      padding: 0.6rem 0.9rem;
+      cursor: pointer;
+      font-size: 0.88rem;
+      border-bottom: 1px solid #f0f4f8;
+    }
+    .sugerencia-item:hover { background: #eef5fc; }
+    .ubicacion-confirmada {
+      background: #eef5fc;
+      border-radius: 10px;
+      padding: 0.7rem 1rem;
+      margin-top: 0.6rem;
+      font-size: 0.88rem;
+      color: var(--color-principal-oscuro);
+      display: none;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .alert-bienestar {
+      background: #fff8e1;
+      border: 1px solid #f59e0b;
+      border-left: 4px solid #f59e0b;
+      border-radius: 10px;
+      padding: 1rem 1.2rem;
+    }
+    .alert-bienestar-titulo {
+      font-weight: 700;
+      font-size: 0.88rem;
+      color: #92400e;
+      margin-bottom: 0.6rem;
+    }
+    .alert-bienestar-lista {
+      padding-left: 1.2rem;
+      margin-bottom: 0.5rem;
+    }
+    .alert-bienestar-lista li {
+      font-size: 0.82rem;
+      margin-bottom: 0.3rem;
+      color: #78350f;
+    }
+  </style>
 </head>
 
 <body>
@@ -54,36 +119,23 @@
           <textarea name="descripcionMascota" class="form-control" rows="4" required></textarea>
         </div>
 
-        <div class="mb-1">
+        <!-- UBICACIÓN CON MAPA -->
+        <div class="mb-3">
           <label class="form-label">Lugar de publicación</label>
-        </div>
-        <div class="row g-3 mb-3">
-          <div class="col-md-4">
-            <select id="selectComunidad" class="form-select" required>
-              <option value="">Comunidad Autónoma</option>
-              <option>Andalucía</option><option>Aragón</option><option>Asturias</option>
-              <option>Baleares</option><option>Canarias</option><option>Cantabria</option>
-              <option>Castilla-La Mancha</option><option>Castilla y León</option>
-              <option>Cataluña</option><option>Ceuta</option>
-              <option>Comunidad de Madrid</option><option>Comunidad Foral de Navarra</option>
-              <option>Comunidad Valenciana</option><option>Extremadura</option>
-              <option>Galicia</option><option>La Rioja</option>
-              <option>Melilla</option><option>País Vasco</option>
-              <option>Región de Murcia</option>
-            </select>
+          <div class="buscador-ubicacion-wrapper">
+            <input type="text" id="buscadorUbicacion" class="form-control"
+                   placeholder="Escribe una ciudad o municipio..." autocomplete="off" required>
+            <div class="sugerencias-ubicacion" id="sugerenciasUbicacion"></div>
           </div>
-          <div class="col-md-4">
-            <select id="selectProvincia" class="form-select" disabled required>
-              <option value="">Provincia</option>
-            </select>
-          </div>
-          <div class="col-md-4">
-            <select id="selectMunicipio" class="form-select" disabled required>
-              <option value="">Municipio</option>
-            </select>
+          <div id="mapaPublicar"></div>
+          <div class="ubicacion-confirmada" id="ubicacionConfirmada">
+            <i class="bi bi-geo-alt-fill text-danger"></i>
+            <span id="textoUbicacionConfirmada"></span>
           </div>
         </div>
         <input type="hidden" name="lugarMascota" id="lugarMascota">
+        <input type="hidden" name="latitudMascota" id="latitudMascota">
+        <input type="hidden" name="longitudMascota" id="longitudMascota">
 
         <div class="mb-3">
           <label class="form-label">Fotos (mínimo 1, máximo 3)</label>
@@ -102,6 +154,27 @@
           </select>
         </div>
 
+        <!-- ADVERTENCIA LEGAL BIENESTAR ANIMAL -->
+        <div class="alert-bienestar mb-3">
+          <div class="alert-bienestar-titulo">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+            Obligaciones legales — Ley 7/2023 de Bienestar Animal
+          </div>
+          <ul class="alert-bienestar-lista">
+            <li>El animal debe estar <strong>identificado con microchip</strong> antes de la cesión</li>
+            <li>Debes disponer de la <strong>documentación sanitaria</strong> actualizada</li>
+            <li>La cesión debe ser <strong>completamente gratuita</strong></li>
+            <li>Eres responsable de verificar que el adoptante puede garantizar el bienestar del animal</li>
+          </ul>
+          <div class="form-check mt-2">
+            <input class="form-check-input" type="checkbox" id="checkBienestar">
+            <label class="form-check-label" style="font-size:0.82rem;">
+              Confirmo que conozco y cumpliré las obligaciones establecidas en la
+              <a href="terminos.html" target="_blank" style="color:#92400e;">Ley 7/2023 de Bienestar Animal</a>.
+            </label>
+          </div>
+        </div>
+
         <div id="mensaje" class="text-center text-danger my-3"></div>
         <button type="submit" class="btn btn-principal w-100">Publicar</button>
       </form>
@@ -109,102 +182,135 @@
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="assets/ubicacion-common.js"></script>
   <script>
-    const datos = {
-      "Andalucía": {
-        "Almería":  ["Almería","Adra","Berja","El Ejido","Huércal-Overa","Níjar","Roquetas de Mar","Vera"],
-        "Cádiz":    ["Cádiz","Algeciras","Chiclana de la Frontera","El Puerto de Santa María","Jerez de la Frontera","La Línea de la Concepción","Rota","San Fernando","Sanlúcar de Barrameda"],
-        "Córdoba":  ["Córdoba","Baena","Cabra","Lucena","Montilla","Palma del Río","Peñarroya-Pueblonuevo","Pozoblanco","Puente Genil"],
-        "Granada":  ["Granada","Almuñécar","Baza","Guadix","Loja","Maracena","Motril","Santa Fe"],
-        "Huelva":   ["Huelva","Almonte","Ayamonte","Isla Cristina","Lepe","Moguer","Nerva","Punta Umbría"],
-        "Jaén":     ["Jaén","Alcalá la Real","Andújar","Baeza","Linares","Martos","Úbeda","Villacarrillo"],
-        "Málaga":   ["Málaga","Antequera","Benalmádena","Estepona","Fuengirola","Marbella","Mijas","Nerja","Ronda","Torremolinos","Vélez-Málaga"],
-        "Sevilla":  ["Sevilla","Alcalá de Guadaíra","Carmona","Dos Hermanas","Écija","Lebrija","Morón de la Frontera","Osuna","Utrera","Umbrete","Camas","Tomares","Bormujos","Mairena del Aljarafe"]
-      },
-      "Aragón":     { "Huesca":["Huesca","Barbastro","Jaca","Monzón","Sabiñánigo","Fraga"],"Teruel":["Teruel","Alcañiz","Andorra","Utrillas","Calamocha"],"Zaragoza":["Zaragoza","Calatayud","Ejea de los Caballeros","Tarazona","Utebo","Cuarte de Huerva"] },
-      "Asturias":   { "Asturias":["Oviedo","Gijón","Avilés","Mieres","Langreo","Siero","Castrillón","Corvera de Asturias"] },
-      "Baleares":   { "Baleares":["Palma","Ibiza","Manacor","Mahón","Calvià","Llucmajor","Marratxí","Sant Antoni de Portmany"] },
-      "Canarias":   { "Las Palmas":["Las Palmas de Gran Canaria","Arrecife","Puerto del Rosario","Telde","Santa Lucía de Tirajana","San Bartolomé de Tirajana"],"Santa Cruz de Tenerife":["Santa Cruz de Tenerife","San Cristóbal de La Laguna","Arona","Adeje","Puerto de la Cruz","La Orotava","Granadilla de Abona"] },
-      "Cantabria":  { "Cantabria":["Santander","Torrelavega","Camargo","Castro-Urdiales","Piélagos","El Astillero","Medio Cudeyo"] },
-      "Castilla-La Mancha": { "Albacete":["Albacete","Hellín","Almansa","Villarrobledo","La Roda","Caudete"],"Ciudad Real":["Ciudad Real","Alcázar de San Juan","Puertollano","Tomelloso","Valdepeñas","Manzanares"],"Cuenca":["Cuenca","Tarancón","Motilla del Palancar","San Clemente"],"Guadalajara":["Guadalajara","Azuqueca de Henares","Cabanillas del Campo","Alovera"],"Toledo":["Toledo","Talavera de la Reina","Illescas","Consuegra","Ocaña","Seseña"] },
-      "Castilla y León": { "Ávila":["Ávila","Arenas de San Pedro","El Barco de Ávila","Arévalo"],"Burgos":["Burgos","Miranda de Ebro","Aranda de Duero","Medina de Pomar"],"León":["León","Ponferrada","San Andrés del Rabanedo","Astorga","La Bañeza"],"Palencia":["Palencia","Aguilar de Campoo","Guardo","Venta de Baños"],"Salamanca":["Salamanca","Béjar","Ciudad Rodrigo","Santa Marta de Tormes"],"Segovia":["Segovia","Cuéllar","El Espinar","San Ildefonso"],"Soria":["Soria","Almazán","El Burgo de Osma","Ágreda"],"Valladolid":["Valladolid","Medina del Campo","Laguna de Duero","Arroyo de la Encomienda"],"Zamora":["Zamora","Benavente","Toro","Puebla de Sanabria"] },
-      "Cataluña":   { "Barcelona":["Barcelona","Hospitalet de Llobregat","Badalona","Terrassa","Sabadell","Mataró","Santa Coloma de Gramenet","Cornellà de Llobregat","Sant Boi de Llobregat","Rubí"],"Girona":["Girona","Blanes","Lloret de Mar","Figueres","Olot","Salt"],"Lleida":["Lleida","Balaguer","Cervera","Mollerussa","Tàrrega"],"Tarragona":["Tarragona","Reus","Tortosa","El Vendrell","Cambrils","Salou"] },
-      "Ceuta":      { "Ceuta":["Ceuta"] },
-      "Comunidad de Madrid": { "Madrid":["Madrid","Móstoles","Alcalá de Henares","Fuenlabrada","Leganés","Getafe","Alcorcón","Torrejón de Ardoz","Parla","Alcobendas","Las Rozas","Pozuelo de Alarcón","Majadahonda","Rivas-Vaciamadrid","Collado Villalba"] },
-      "Comunidad Foral de Navarra": { "Navarra":["Pamplona","Tudela","Barañáin","Burlada","Estella","Sarriguren","Zizur Mayor"] },
-      "Comunidad Valenciana": { "Alicante":["Alicante","Benidorm","Elche","Torrevieja","Orihuela","Villena","Alcoy","Petrer","San Vicente del Raspeig"],"Castellón":["Castellón de la Plana","Benicàssim","Burriana","Vinaròs","Vila-real","Peñíscola"],"Valencia":["Valencia","Torrent","Gandia","Paterna","Sagunto","Alzira","Mislata","Burjassot","Xirivella"] },
-      "Extremadura": { "Badajoz":["Badajoz","Mérida","Don Benito","Almendralejo","Villanueva de la Serena","Zafra"],"Cáceres":["Cáceres","Plasencia","Navalmoral de la Mata","Miajadas","Trujillo"] },
-      "Galicia":    { "A Coruña":["A Coruña","Santiago de Compostela","Ferrol","Lugo","Ourense","Pontevedra","Vigo"],"Lugo":["Lugo","Monforte de Lemos","Vilalba","Sarria","Chantada"],"Ourense":["Ourense","Verín","O Barco de Valdeorras","Xinzo de Limia"],"Pontevedra":["Vigo","Pontevedra","Vilagarcía de Arousa","Redondela","Cangas","Marín","A Estrada"] },
-      "La Rioja":   { "La Rioja":["Logroño","Calahorra","Arnedo","Haro","Nájera","Alfaro"] },
-      "Melilla":    { "Melilla":["Melilla"] },
-      "País Vasco": { "Álava":["Vitoria-Gasteiz","Amurrio","Llodio","Salvatierra"],"Gipuzkoa":["San Sebastián","Irun","Errenteria","Zarautz","Eibar","Arrasate"],"Bizkaia":["Bilbao","Barakaldo","Getxo","Basauri","Leioa","Santurtzi","Portugalete"] },
-      "Región de Murcia": { "Murcia":["Murcia","Cartagena","Lorca","Molina de Segura","Alcantarilla","Mazarrón","San Javier","Torre-Pacheco","Yecla"] }
-    };
+    // Verificar sesión al cargar
+    fetch('php/index.php')
+      .then(r => r.json())
+      .then(data => {
+        if (!data.logueado) window.location.href = 'login.html';
+      })
+      .catch(() => { window.location.href = 'login.html'; });
 
-    const selComunidad = document.getElementById("selectComunidad");
-    const selProvincia = document.getElementById("selectProvincia");
-    const selMunicipio = document.getElementById("selectMunicipio");
-    const inputLugar   = document.getElementById("lugarMascota");
+    // ── Mapa Leaflet ──
+    const mapa = L.map('mapaPublicar').setView([40.4168, -3.7038], 5);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap'
+    }).addTo(mapa);
 
-    selComunidad.addEventListener("change", () => {
-      const com = selComunidad.value;
-      selProvincia.innerHTML = '<option value="">Provincia</option>';
-      selMunicipio.innerHTML = '<option value="">Municipio</option>';
-      selProvincia.disabled  = !com;
-      selMunicipio.disabled  = true;
-      inputLugar.value       = "";
-      if (com) Object.keys(datos[com] || {}).forEach(p => {
-        const o = document.createElement("option"); o.value=p; o.textContent=p;
-        selProvincia.appendChild(o);
-      });
+    let circuloZona  = null;
+    let marcadorZona = null;
+
+    function actualizarMapa(lat, lon, boundingbox) {
+      let latCentro = lat;
+      let lonCentro = lon;
+
+      if (boundingbox && boundingbox.length === 4) {
+        const [latMin, latMax, lonMin, lonMax] = boundingbox.map(parseFloat);
+        latCentro = (latMin + latMax) / 2;
+        lonCentro = (lonMin + lonMax) / 2;
+      }
+
+      mapa.setView([latCentro, lonCentro], 11);
+
+      if (marcadorZona) mapa.removeLayer(marcadorZona);
+      if (circuloZona)  mapa.removeLayer(circuloZona);
+
+      circuloZona = L.circle([latCentro, lonCentro], {
+        radius: 4000,
+        color: '#7aa7d2',
+        fillColor: '#a7c7e7',
+        fillOpacity: 0.35
+      }).addTo(mapa);
+
+      marcadorZona = L.marker([latCentro, lonCentro]).addTo(mapa);
+    }
+
+    const inputBuscador  = document.getElementById('buscadorUbicacion');
+    const sugerenciasDiv = document.getElementById('sugerenciasUbicacion');
+    let timeoutBusqueda  = null;
+
+    inputBuscador.addEventListener('input', () => {
+      const texto = inputBuscador.value.trim();
+      clearTimeout(timeoutBusqueda);
+      if (texto.length < 2) { sugerenciasDiv.style.display = 'none'; return; }
+
+      timeoutBusqueda = setTimeout(async () => {
+        const resultados = await buscarUbicaciones(texto);
+        sugerenciasDiv.innerHTML = '';
+        if (!resultados.length) { sugerenciasDiv.style.display = 'none'; return; }
+
+        resultados.forEach(lugar => {
+          const ubic = extraerUbicacionDesdeNominatim(lugar);
+          if (!ubic.texto) return;
+          const div = document.createElement('div');
+          div.className   = 'sugerencia-item';
+          div.textContent = ubic.texto;
+          div.addEventListener('click', () => seleccionarLugar(lugar));
+          sugerenciasDiv.appendChild(div);
+        });
+
+        sugerenciasDiv.style.display = sugerenciasDiv.children.length ? 'block' : 'none';
+      }, 400);
     });
 
-    selProvincia.addEventListener("change", () => {
-      const com  = selComunidad.value;
-      const prov = selProvincia.value;
-      selMunicipio.innerHTML = '<option value="">Municipio</option>';
-      selMunicipio.disabled  = !prov;
-      inputLugar.value       = "";
-      if (prov) (datos[com]?.[prov] || []).forEach(m => {
-        const o = document.createElement("option"); o.value=m; o.textContent=m;
-        selMunicipio.appendChild(o);
-      });
+    document.addEventListener('click', e => {
+      if (!e.target.closest('.buscador-ubicacion-wrapper')) {
+        sugerenciasDiv.style.display = 'none';
+      }
     });
 
-    selMunicipio.addEventListener("change", () => {
-      inputLugar.value = `${selComunidad.value}, ${selProvincia.value}, ${selMunicipio.value}`;
-    });
+    function seleccionarLugar(lugar) {
+      const ubic = extraerUbicacionDesdeNominatim(lugar);
 
+      document.getElementById('lugarMascota').value    = ubic.texto;
+      document.getElementById('latitudMascota').value  = ubic.lat;
+      document.getElementById('longitudMascota').value = ubic.lon;
+
+      inputBuscador.value = ubic.texto;
+      sugerenciasDiv.style.display = 'none';
+
+      const confirmacion = document.getElementById('ubicacionConfirmada');
+      document.getElementById('textoUbicacionConfirmada').textContent = ubic.texto;
+      confirmacion.style.display = 'flex';
+
+      actualizarMapa(ubic.lat, ubic.lon, ubic.boundingbox);
+    }
+
+    // ── Envío del formulario ──
     document.getElementById("formPublicar").addEventListener("submit", async e => {
       e.preventDefault();
-      const msg         = document.getElementById("mensaje");
-      const btnPublicar = e.target.querySelector("button[type=submit]");
+      const msg = document.getElementById("mensaje");
+      msg.textContent = '';
 
-      if (!inputLugar.value) {
-        msg.classList.add("text-danger");
-        msg.textContent = "Por favor selecciona Comunidad, Provincia y Municipio.";
+      if (!document.getElementById('lugarMascota').value) {
+        msg.textContent = "Por favor selecciona una ubicación en el buscador.";
         return;
       }
 
-      const formData = new FormData(e.target);
+      if (!document.getElementById('checkBienestar').checked) {
+        msg.textContent = "Debes confirmar que conoces y cumplirás las obligaciones de la Ley de Bienestar Animal.";
+        return;
+      }
+
+      const formData    = new FormData(e.target);
+      const btnPublicar = e.target.querySelector("button[type=submit]");
       btnPublicar.disabled    = true;
       btnPublicar.textContent = "Publicando...";
 
       try {
-        const res   = await fetch("/adopciones/php/publicar.php", { method: "POST", body: formData });
+        const res   = await fetch("php/publicar.php", { method: "POST", body: formData });
         const texto = await res.text();
 
         if (texto.trim() === "success") {
-          // Cerrar esta ventana — el index detecta el cierre y recarga automáticamente
           window.close();
         } else {
-          msg.classList.add("text-danger");
           msg.textContent         = texto;
           btnPublicar.disabled    = false;
           btnPublicar.textContent = "Publicar";
         }
       } catch {
-        msg.classList.add("text-danger");
         msg.textContent         = "Error al conectar con el servidor.";
         btnPublicar.disabled    = false;
         btnPublicar.textContent = "Publicar";
